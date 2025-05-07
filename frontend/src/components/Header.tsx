@@ -12,35 +12,6 @@ const Header: React.FC = () => {
               What kind trash is this?
             </h1>
           </div>
-          
-          <nav>
-            <ul className="flex space-x-6">
-              <li className="hidden md:block">
-                <a 
-                  href="#" 
-                  className="text-white hover:text-green-100 transition-colors"
-                >
-                  How It Works
-                </a>
-              </li>
-              <li className="hidden md:block">
-                <a 
-                  href="#" 
-                  className="text-white hover:text-green-100 transition-colors"
-                >
-                  About
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="#" 
-                  className="bg-white text-green-700 hover:bg-green-50 px-4 py-2 rounded-lg font-medium transition-colors"
-                >
-                  Get Started
-                </a>
-              </li>
-            </ul>
-          </nav>
         </div>
       </div>
     </header>

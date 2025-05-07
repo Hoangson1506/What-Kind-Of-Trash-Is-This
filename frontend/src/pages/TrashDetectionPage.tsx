@@ -48,7 +48,7 @@ const TrashDetectionPage: React.FC = () => {
       const processedResult: ProcessedImage = {
         id: Date.now().toString(),
         originalImage: imageData,
-        processedImage: result.processedImage || result.image || imageData, // fallback to original image if processed not provided
+        processedImage: result.processedImage || result.image || imageData,
         detections: result.detections || [],
         timestamp: new Date()
       };
@@ -58,6 +58,46 @@ const TrashDetectionPage: React.FC = () => {
     } catch (error) {
       console.error('Error processing image:', error);
       toast.error('Failed to process image. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const processVideo = async (videoBlob: Blob) => {
+    try {
+      setIsProcessing(true);
+
+      const formData = new FormData();
+      formData.append('video', videoBlob);
+
+      const response = await fetch('http://127.0.0.1:8000/inference-video', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to process video');
+      }
+
+      const result = await response.json();
+      toast.success('Video processed successfully');
+
+      if (result.frames && result.frames.length > 0) {
+        const lastFrame = result.frames[result.frames.length - 1];
+        const processedResult: ProcessedImage = {
+          id: Date.now().toString(),
+          originalImage: lastFrame.original,
+          processedImage: lastFrame.processed,
+          detections: lastFrame.detections || [],
+          timestamp: new Date()
+        };
+
+        setProcessedResult(processedResult);
+        setRecentImages(prev => [processedResult, ...prev].slice(0, 5));
+      }
+    } catch (error) {
+      console.error('Error processing video:', error);
+      toast.error('Failed to process video. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -75,7 +115,10 @@ const TrashDetectionPage: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
             <h2 className="text-xl font-medium mb-4">Detect Your Trash</h2>
             {!currentImage ? (
-              <ImageUploader onImageUploaded={processImage} />
+              <ImageUploader
+                onImageUploaded={processImage}
+                onVideoUploaded={processVideo}
+              />
             ) : (
               <ResultsDisplay
                 isProcessing={isProcessing}

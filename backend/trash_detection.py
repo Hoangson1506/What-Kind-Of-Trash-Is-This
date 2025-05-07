@@ -4,6 +4,14 @@ from io import BytesIO
 import base64
 
 model = None
+class_map = {
+    0: 'food',
+    1: 'glass',
+    2: 'metal',
+    3: 'other',
+    4: 'paper',
+    5: 'plastic'
+}
 
 
 def init_model(model_path):
@@ -33,7 +41,7 @@ async def detect_with_model(image):
         conf = float(box.conf[0])
         xyxy = [round(x, 2) for x in box.xyxy[0].tolist()]
         detections.append({
-            "trashType": cls,
+            "trashType": class_map[cls],
             "confidence": round(conf, 2),
             "bbox": xyxy
         })

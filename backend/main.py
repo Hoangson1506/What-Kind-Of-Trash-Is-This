@@ -14,7 +14,7 @@ origins = [
 
 @app.on_event("startup")
 async def startup_event():
-    model_path = "./v8n_73_516/best.pt"
+    model_path = "./model/v8s.pt"
     init_model(model_path)
 
 app.add_middleware(
