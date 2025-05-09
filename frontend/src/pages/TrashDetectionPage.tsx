@@ -4,6 +4,8 @@ import ResultsDisplay from '../components/ResultsDisplay';
 import RecentHistory from '../components/RecentHistory';
 import TrashTypeIndicator from '../components/TrashTypeIndicator';
 import toast from 'react-hot-toast';
+import { FeedbackData } from '../components/FeedbackForm';
+import { LabelData } from '../components/ImageLabeler';
 
 export interface Detection {
   trashType: string;
@@ -103,10 +105,70 @@ const TrashDetectionPage: React.FC = () => {
     }
   };
 
+  const handleFeedbackSubmit = async (feedback: FeedbackData) => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(feedback)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit feedback');
+      }
+
+      toast.success('Thank you for your feedback!');
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      toast.error('Failed to submit feedback. Please try again.');
+    }
+  };
+
+  const handleLabelsSubmit = async (labels: LabelData[]) => {
+    try {
+      if (!currentImage) return;
+
+      const response = await fetch('http://127.0.0.1:8000/contribute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: currentImage,
+          labels
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit labels');
+      }
+
+      toast.success('Thank you for contributing to our dataset!');
+    } catch (error) {
+      console.error('Error submitting labels:', error);
+      toast.error('Failed to submit labels. Please try again.');
+    }
+  };
+
   const resetState = () => {
     setCurrentImage(null);
     setProcessedResult(null);
   };
+
+  // Get distinct trash types with highest confidence
+  const uniqueDetections = processedResult
+    ? Object.values(
+      processedResult.detections.reduce((acc: { [key: string]: Detection }, detection: Detection) => {
+        const type = detection.trashType.toLowerCase();
+        if (!acc[type] || detection.confidence > acc[type].confidence) {
+          acc[type] = detection;
+        }
+        return acc;
+      }, {})
+    )
+    : [];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -125,6 +187,8 @@ const TrashDetectionPage: React.FC = () => {
                 originalImage={currentImage}
                 result={processedResult}
                 onReset={resetState}
+                onFeedbackSubmit={handleFeedbackSubmit}
+                onLabelsSubmit={handleLabelsSubmit}
               />
             )}
           </div>
@@ -133,10 +197,10 @@ const TrashDetectionPage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
               <h2 className="text-xl font-medium mb-4">Detection Results</h2>
               <div className="space-y-4">
-                {processedResult.detections.map((detection, index) => (
+                {uniqueDetections.map((detection: Detection, index: number) => (
                   <div key={index} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center justify-between">
-                      <TrashTypeIndicator trashType={detection.trashType} />
+                      <TrashTypeIndicator trashType={detection.trashType} size='lg' />
                       <span className="text-sm text-gray-600">
                         Confidence: {(detection.confidence * 100).toFixed(1)}%
                       </span>
@@ -162,23 +226,27 @@ const TrashDetectionPage: React.FC = () => {
 
 const DisposalInstructions: React.FC<{ trashType: string }> = ({ trashType }) => {
   const instructions: Record<string, { text: string, color: string }> = {
-    'Plastic': {
+    'plastic': {
       text: 'Rinse containers and recycle in designated plastic bins. Remove caps and labels if required.',
       color: 'bg-blue-100 text-blue-800'
     },
-    'Paper': {
+    'paper': {
       text: 'Recycle clean, dry paper in paper recycling bins. Avoid recycling soiled or food-contaminated paper.',
       color: 'bg-yellow-100 text-yellow-800'
     },
-    'Glass': {
+    'glass': {
       text: 'Rinse glass containers and recycle in glass recycling bins. Remove caps and lids.',
       color: 'bg-purple-100 text-purple-800'
     },
-    'Metal': {
+    'metal': {
       text: 'Clean metal cans and containers and recycle in metal recycling bins.',
       color: 'bg-gray-100 text-gray-800'
     },
-    'Organic': {
+    'other': {
+      text: 'Dispose of in regular trash bins. Check local guidelines for specific items.',
+      color: 'bg-gray-100 text-gray-800'
+    },
+    'food': {
       text: 'Compost in designated organic waste bins or home composting systems.',
       color: 'bg-green-100 text-green-800'
     },

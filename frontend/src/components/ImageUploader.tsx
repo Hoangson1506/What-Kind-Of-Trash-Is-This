@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Upload, ImageIcon, Video, Camera } from 'lucide-react';
 import Webcam from 'react-webcam';
 import toast from 'react-hot-toast';
+import { colorMap, TrashType, hexToRgba } from '../utils/colorUtils';
 
 interface ImageUploaderProps {
   onImageUploaded: (imageData: string) => void;
@@ -53,7 +54,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
     onDropRejected: () => setIsDragging(false),
   });
 
-  const drawDetections = (detections: any[]) => {
+  interface Detection {
+    bbox: [number, number, number, number];
+    trashType: TrashType;
+    confidence: number;
+  }
+
+  const drawDetections = (detections: Detection[]) => {
     const canvas = canvasRef.current;
     const video = webcamRef.current?.video;
 
@@ -75,24 +82,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
     const scale = Math.min(scaleX, scaleY);
     const offsetX = (video.videoWidth - (640 * scale)) / 2;
     const offsetY = (video.videoHeight - (640 * scale)) / 2;
-
-    // Define color map for different trash types
-    const colorMap = {
-      'food': '#FFA500', //orange
-      'glass': '#FFFF00', //yellow
-      'metal': '#800080', //purple
-      'other': '#0000FF', //blue
-      'paper': '#FF0000', //red
-      'plastic': '#008000', //green
-    }
-
-    // Helper function to convert hex to RGBA
-    const hexToRgba = (hex: string, alpha: number) => {
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    };
 
     detections.forEach(detection => {
       const [x, y, width, height] = detection.bbox;
@@ -163,7 +152,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
           wsRef.current.send(JSON.stringify({ image: frame }));
         }
       }
-    }, 500); // ~30 FPS
+    }, 200); // ~30 FPS
   }, []);
 
   const stopStreaming = useCallback(() => {

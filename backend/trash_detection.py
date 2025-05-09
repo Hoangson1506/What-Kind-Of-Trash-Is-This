@@ -50,4 +50,5 @@ async def detect_with_model(image):
         "processedImage": f"data:image/jpeg;base64,{img_base64}",
         "detections": detections
     }
+    print(content.get("detections"))
     return content
