@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Upload, ImageIcon, Video, Camera } from 'lucide-react';
 import Webcam from 'react-webcam';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { colorMap, TrashType, hexToRgba } from '../utils/colorUtils';
 
 interface ImageUploaderProps {
@@ -11,6 +12,7 @@ interface ImageUploaderProps {
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoUploaded }) => {
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const [isWebcamActive, setIsWebcamActive] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -200,7 +202,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
             }`}
         >
           <ImageIcon size={20} className="mr-2" />
-          Image
+          {t('upload.types.image')}
         </button>
         <button
           onClick={() => {
@@ -214,7 +216,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
             }`}
         >
           <Video size={20} className="mr-2" />
-          Video
+          {t('upload.types.video')}
         </button>
         <button
           onClick={() => {
@@ -227,7 +229,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
             }`}
         >
           <Camera size={20} className="mr-2" />
-          Webcam
+          {t('upload.types.webcam')}
         </button>
       </div>
 
@@ -277,41 +279,41 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
               )}
             </div>
             <p className="text-lg font-medium mb-1">
-              {isDragging ? 'Drop the file here' : `Drag and drop ${uploadType === 'video' ? 'a video' : 'an image'} here`}
+              {isDragging ? t('upload.dropzone.dragActive') : t('upload.dropzone.dragInactive', { type: uploadType === 'video' ? t('upload.types.video').toLowerCase() : t('upload.types.image').toLowerCase() })}
             </p>
-            <p className="text-gray-500 mb-4">or click to select a file</p>
+            <p className="text-gray-500 mb-4">{t('upload.dropzone.clickToSelect')}</p>
             <p className="text-sm text-gray-400">
               {uploadType === 'video'
-                ? 'Supported formats: MP4, WebM, MOV (max 100MB)'
-                : 'Supported formats: JPG, PNG, GIF (max 10MB)'}
+                ? t('upload.dropzone.supportedFormats.video')
+                : t('upload.dropzone.supportedFormats.image')}
             </p>
           </div>
         </div>
       )}
 
       <div className="mt-8">
-        <h3 className="text-lg font-medium mb-4">How it works</h3>
+        <h3 className="text-lg font-medium mb-4">{t('upload.howItWorks.title')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center mb-2">
               <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center font-medium mr-2">1</div>
-              <span className="font-medium">Upload</span>
+              <span className="font-medium">{t('upload.howItWorks.steps.upload.title')}</span>
             </div>
-            <p className="text-sm text-gray-600">Upload an image, video, or use your webcam to capture trash items</p>
+            <p className="text-sm text-gray-600">{t('upload.howItWorks.steps.upload.description')}</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center mb-2">
               <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center font-medium mr-2">2</div>
-              <span className="font-medium">Process</span>
+              <span className="font-medium">{t('upload.howItWorks.steps.process.title')}</span>
             </div>
-            <p className="text-sm text-gray-600">Our AI model analyzes the content to identify the type of trash</p>
+            <p className="text-sm text-gray-600">{t('upload.howItWorks.steps.process.description')}</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center mb-2">
               <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center font-medium mr-2">3</div>
-              <span className="font-medium">Results</span>
+              <span className="font-medium">{t('upload.howItWorks.steps.results.title')}</span>
             </div>
-            <p className="text-sm text-gray-600">Get results showing trash type and proper disposal instructions</p>
+            <p className="text-sm text-gray-600">{t('upload.howItWorks.steps.results.description')}</p>
           </div>
         </div>
       </div>

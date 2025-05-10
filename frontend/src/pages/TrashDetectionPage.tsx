@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import ImageUploader from '../components/ImageUploader';
 import ResultsDisplay from '../components/ResultsDisplay';
 import RecentHistory from '../components/RecentHistory';
+import DisposalMap from '../components/DisposalMap';
 import TrashTypeIndicator from '../components/TrashTypeIndicator';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { FeedbackData } from '../components/FeedbackForm';
 import { LabelData } from '../components/ImageLabeler';
 
@@ -22,6 +24,7 @@ export interface ProcessedImage {
 }
 
 const TrashDetectionPage: React.FC = () => {
+  const { t } = useTranslation();
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [processedResult, setProcessedResult] = useState<ProcessedImage | null>(null);
@@ -175,7 +178,7 @@ const TrashDetectionPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <h2 className="text-xl font-medium mb-4">Detect Your Trash</h2>
+            <h2 className="text-xl font-medium mb-4">{t('upload.title')}</h2>
             {!currentImage ? (
               <ImageUploader
                 onImageUploaded={processImage}
@@ -195,14 +198,14 @@ const TrashDetectionPage: React.FC = () => {
 
           {currentImage && processedResult && (
             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-              <h2 className="text-xl font-medium mb-4">Detection Results</h2>
+              <h2 className="text-xl font-medium mb-4">{t('results.title')}</h2>
               <div className="space-y-4">
                 {uniqueDetections.map((detection: Detection, index: number) => (
                   <div key={index} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <TrashTypeIndicator trashType={detection.trashType} size='lg' />
                       <span className="text-sm text-gray-600">
-                        Confidence: {(detection.confidence * 100).toFixed(1)}%
+                        {t('results.summary.confidence', { value: Math.round(detection.confidence * 100) })}
                       </span>
                     </div>
                     <DisposalInstructions trashType={detection.trashType} />
@@ -211,11 +214,15 @@ const TrashDetectionPage: React.FC = () => {
               </div>
             </div>
           )}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-medium mb-4">{t('map.title')}</h2>
+            <DisposalMap />
+          </div>
         </div>
 
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6 sticky top-6">
-            <h2 className="text-xl font-medium mb-4">Recent Detections</h2>
+            <h2 className="text-xl font-medium mb-4">{t('history.title')}</h2>
             <RecentHistory images={recentImages} />
           </div>
         </div>

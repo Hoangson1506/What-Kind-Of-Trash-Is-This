@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Save, X } from 'lucide-react';
 import { colorMap, TRASH_TYPES, hexToRgba } from '../utils/colorUtils';
+import { useTranslation } from 'react-i18next';
 
 interface ImageLabelerProps {
     imageUrl: string;
@@ -14,6 +15,7 @@ export interface LabelData {
 }
 
 const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel }) => {
+    const { t } = useTranslation();
     const [labels, setLabels] = useState<LabelData[]>([]);
     const [currentLabel, setCurrentLabel] = useState<Partial<LabelData> | null>(null);
     const [selectedType, setSelectedType] = useState(TRASH_TYPES[0]);
@@ -149,7 +151,7 @@ const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel 
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">Label Image</h3>
+                <h3 className="text-lg font-medium">{t('label.title')}</h3>
                 <div className="space-x-2">
                     <button
                         onClick={onCancel}
@@ -162,7 +164,7 @@ const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel 
                         className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                     >
                         <Save size={20} className="mr-2" />
-                        Save Labels
+                        {t('label.saveLabel')}
                     </button>
                 </div>
             </div>
@@ -174,7 +176,7 @@ const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel 
                     className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                     {TRASH_TYPES.map((type) => (
-                        <option key={type} value={type}>{type}</option>
+                        <option key={type} value={type}>{t(`trashes.${type.toLowerCase()}.name`)}</option>
                     ))}
                 </select>
                 <button
@@ -182,13 +184,13 @@ const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel 
                     disabled={labels.length === 0}
                     className="px-4 py-2 text-blue-600 hover:text-blue-700 disabled:text-gray-400"
                 >
-                    Undo
+                    {t('label.undo')}
                 </button>
                 <button
                     onClick={() => setLabels([])}
                     className="px-4 py-2 text-red-600 hover:text-red-700"
                 >
-                    Clear All
+                    {t('label.clear')}
                 </button>
             </div>
 
@@ -212,9 +214,9 @@ const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel 
             </div>
 
             <div className="space-y-2">
-                <h4 className="font-medium">Current Labels:</h4>
+                <h4 className="font-medium">{t('label.currentLabels')}</h4>
                 {labels.length === 0 ? (
-                    <p className="text-sm text-gray-500">No labels yet.</p>
+                    <p className="text-sm text-gray-500">{t('label.noLabels')}</p>
                 ) : (
                     <ul className="space-y-1">
                         {labels.map((label, index) => (
@@ -236,13 +238,13 @@ const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel 
             </div>
 
             <div className="space-y-2">
-                <h4 className="font-medium">Instructions:</h4>
+                <h4 className="font-medium">{t('label.instructions.title')}</h4>
                 <ol className="list-decimal list-inside text-sm text-gray-600 space-y-1">
-                    <li>Select a trash type from the dropdown</li>
-                    <li>Click and drag on the image to draw a bounding box</li>
-                    <li>Release to confirm the label</li>
-                    <li>Use Undo or Clear All to correct mistakes</li>
-                    <li>Click "Save Labels" when finished</li>
+                    <li>{t('label.instructions.step1')}</li>
+                    <li>{t('label.instructions.step2')}</li>
+                    <li>{t('label.instructions.step3')}</li>
+                    <li>{t('label.instructions.step4')}</li>
+                    <li>{t('label.instructions.step5')}</li>
                 </ol>
             </div>
         </div>

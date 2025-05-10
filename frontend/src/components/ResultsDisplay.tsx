@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Download, RefreshCw } from 'lucide-react';
 import { ProcessedImage } from '../pages/TrashDetectionPage';
+import { useTranslation } from 'react-i18next';
 import FeedbackForm from './FeedbackForm';
 import ImageLabeler from './ImageLabeler';
 
@@ -22,6 +23,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   onFeedbackSubmit,
   onLabelsSubmit
 }) => {
+  const { t } = useTranslation();
   const [isLabeling, setIsLabeling] = useState(false);
 
   const handleDownload = () => {
@@ -42,7 +44,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         className="flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
       >
         <ArrowLeft size={16} className="mr-1" />
-        <span>Back</span>
+        <span>{t('results.back')}</span>
       </button>
 
       {isLabeling ? (
@@ -59,7 +61,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Original Image */}
             <div className="flex flex-col">
-              <h3 className="text-md font-medium mb-2">Original Image</h3>
+              <h3 className="text-md font-medium mb-2">{t('results.originalImage')}</h3>
               <div className="border rounded-lg overflow-hidden aspect-square relative bg-gray-100">
                 <img
                   src={originalImage}
@@ -71,12 +73,12 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
             {/* Processed Image */}
             <div className="flex flex-col">
-              <h3 className="text-md font-medium mb-2">Detection Result</h3>
+              <h3 className="text-md font-medium mb-2">{t('results.detectionResult')}</h3>
               <div className="border rounded-lg overflow-hidden aspect-square relative bg-gray-100">
                 {isProcessing ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <RefreshCw size={40} className="text-green-500 animate-spin mb-3" />
-                    <p className="text-gray-600">Detecting trash types...</p>
+                    <p className="text-gray-600">{t('results.detecting')}</p>
                   </div>
                 ) : result ? (
                   <>
@@ -97,7 +99,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   </>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <p className="text-gray-500">Processing your image...</p>
+                    <p className="text-gray-500">{t('results.processing')}</p>
                   </div>
                 )}
               </div>
@@ -107,10 +109,11 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           {result && (
             <>
               <div className="mt-6">
-                <h3 className="text-md font-medium mb-3">Feedback</h3>
+                <h3 className="text-md font-medium mb-3">{t('results.feedback.title')}</h3>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <FeedbackForm
                     imageId={result.id}
+                    originalImage={originalImage}
                     onFeedbackSubmit={onFeedbackSubmit}
                     onStartLabeling={() => setIsLabeling(true)}
                   />

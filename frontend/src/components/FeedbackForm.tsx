@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ThumbsUp, ThumbsDown, Edit3 } from 'lucide-react';
 
 interface FeedbackFormProps {
     imageId: string;
+    originalImage: string;
     onFeedbackSubmit: (feedback: FeedbackData) => void;
     onStartLabeling: () => void;
 }
 
 export interface FeedbackData {
     imageId: string;
+    originalImage: string;
     isCorrect: boolean;
     comment?: string;
 }
 
-const FeedbackForm: React.FC<FeedbackFormProps> = ({ imageId, onFeedbackSubmit, onStartLabeling }) => {
+const FeedbackForm: React.FC<FeedbackFormProps> = ({ imageId, originalImage, onFeedbackSubmit, onStartLabeling }) => {
+    const { t } = useTranslation();
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [comment, setComment] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -23,6 +27,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ imageId, onFeedbackSubmit, 
 
         onFeedbackSubmit({
             imageId,
+            originalImage,
             isCorrect,
             comment: comment.trim() || undefined
         });
@@ -33,7 +38,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ imageId, onFeedbackSubmit, 
     if (isSubmitted) {
         return (
             <div className="text-center text-green-600 py-2">
-                Thank you for your feedback!
+                {t('results.feedback.thanks')}
             </div>
         );
     }
@@ -49,7 +54,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ imageId, onFeedbackSubmit, 
                         }`}
                 >
                     <ThumbsUp size={20} className="mr-2" />
-                    Correct
+                    {t('results.feedback.correct')}
                 </button>
                 <button
                     onClick={() => setIsCorrect(false)}
@@ -59,7 +64,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ imageId, onFeedbackSubmit, 
                         }`}
                 >
                     <ThumbsDown size={20} className="mr-2" />
-                    Incorrect
+                    {t('results.feedback.incorrect')}
                 </button>
             </div>
 
@@ -68,7 +73,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ imageId, onFeedbackSubmit, 
                     <textarea
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
-                        placeholder="What was incorrect about the detection? (optional)"
+                        placeholder={t('results.feedback.comment')}
                         className="w-full p-2 border rounded-lg resize-none h-24 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                 </div>
@@ -80,7 +85,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ imageId, onFeedbackSubmit, 
                     className="flex items-center px-4 py-2 text-gray-700 hover:text-gray-900"
                 >
                     <Edit3 size={20} className="mr-2" />
-                    Help improve by labeling
+                    {t('results.feedback.improveLabeling')}
                 </button>
 
                 <button
@@ -88,7 +93,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ imageId, onFeedbackSubmit, 
                     disabled={isCorrect === null}
                     className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Submit Feedback
+                    {t('results.feedback.submit')}
                 </button>
             </div>
         </div>
