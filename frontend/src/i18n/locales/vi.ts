@@ -1,6 +1,16 @@
 export default {
     header: {
-        title: 'Đây là rác gì?'
+        title: 'Đây là rác gì?',
+        home: 'Trang chủ',
+        about: 'Về chúng tôi'
+    },
+    about: {
+        title: 'Đội ngũ của chúng tôi',
+        description: 'Chúng tôi đam mê sử dụng công nghệ để tạo ra một tương lai sạch hơn, bền vững hơn. Đội ngũ đa dạng của chúng tôi kết hợp chuyên môn về AI, khoa học môi trường và phát triển phần mềm.',
+        mission: {
+            title: 'Sứ mệnh của chúng tôi',
+            description: 'Với tình trạng ô nhiễm môi trường đang ở mức báo động, nhóm sinh viên đại học chuyên ngành Trí tuệ nhân tạo của chúng tôi tại Việt Nam mong muốn đóng góp một phần kiến thức của mình vào phong trào bảo vệ môi trường. Chúng tôi đam mê việc ứng dụng những gì đã học để giúp đất nước trở nên xanh sạch hơn. Ở Việt Nam, dù có nhiều nỗ lực cải thiện môi trường, nhưng vẫn còn rất nhiều người chưa biết cách phân loại rác hoặc xử lý rác thải đúng cách. Website của chúng tôi hướng đến việc giải quyết vấn đề đó bằng cách cho phép người dùng tải lên hình ảnh, video về rác thải, hoặc sử dụng webcam trực tiếp để nhận phản hồi tức thì về loại rác đó, kèm theo những mẹo đơn giản để xử lý. Chúng tôi hy vọng công cụ này sẽ giúp việc quản lý rác thải trở nên dễ dàng hơn cho mọi người, và góp phần hỗ trợ nỗ lực xây dựng một tương lai bền vững hơn cho Việt Nam.'
+        }
     },
     upload: {
         title: 'Nhận diện rác thải',

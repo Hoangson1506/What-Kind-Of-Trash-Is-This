@@ -1,6 +1,16 @@
 export default {
     header: {
-        title: 'What kind of trash is this?'
+        title: 'What kind of trash is this?',
+        home: 'Home',
+        about: 'About'
+    },
+    about: {
+        title: 'Meet Our Team',
+        description: 'We are passionate about using technology to create a cleaner, more sustainable future. Our diverse team brings together expertise in AI, environmental science, and software development.',
+        mission: {
+            title: 'Our Mission',
+            description: "With environmental pollution reaching critical levels, our team of AI undergraduate students in Vietnam wants to contribute some of our knowledge to this movement. We're passionate about using what we've learned to help make our country greener and cleaner. In Vietnam, there's a big push to improve the environment, but many people aren't sure how to sort their trash or dispose of it properly. Our Web aims to fix that by letting users upload photos, videos of trash, or use real-time webcam and get instant feedback on what type it is, along with simple tips on how to handle it. We hope this tool makes waste management easier for everyone and supports Vietnam's efforts to build a more sustainable future."
+        }
     },
     upload: {
         title: 'Detect Your Trash',
