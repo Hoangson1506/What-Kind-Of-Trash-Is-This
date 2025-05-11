@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from routers import router
 from fastapi.middleware.cors import CORSMiddleware
 from trash_detection import init_model
+from config import MODEL_NAME
 
 app = FastAPI()
 
@@ -14,7 +15,7 @@ origins = [
 
 @app.on_event("startup")
 async def startup_event():
-    model_path = "./model/v8s.pt"
+    model_path = f"./model/{MODEL_NAME}.pt"
     init_model(model_path)
 
 app.add_middleware(

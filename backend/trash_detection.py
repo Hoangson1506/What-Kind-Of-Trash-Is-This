@@ -2,16 +2,9 @@ from ultralytics import YOLO
 from PIL import Image
 from io import BytesIO
 import base64
+from config import class_map
 
 model = None
-class_map = {
-    0: 'food',
-    1: 'glass',
-    2: 'metal',
-    3: 'other',
-    4: 'paper',
-    5: 'plastic'
-}
 
 
 def init_model(model_path):
@@ -50,5 +43,4 @@ async def detect_with_model(image):
         "processedImage": f"data:image/jpeg;base64,{img_base64}",
         "detections": detections
     }
-    print(content.get("detections"))
     return content
