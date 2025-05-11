@@ -47,13 +47,63 @@ With environmental pollution reaching critical levels, our team of AI undergradu
 - **Image Detection Model**: YOLO
 - **Database**: ...
 
+## Prerequisites (optional for developers)
+- Node.js 18.0 or higher
+- NPM or Yarn
+- Python installed
+
 ## Installation
+### Without Docker Hub
+A step-by-step instructions to set up project locally.
+
+1. Clone the repository and navigate to the project directory:
+``` 
+git clone https://github.com/Hoangson1506/What-Kind-Of-Trash-Is-This.git
+cd What-Kind-Of-Trash-Is-This
+```
+2. Run the server:
+```
+docker-compose up -d
+```
+
+### With Docker Hub
+Guide to set up project by using Docker Hub.
+1. Pull image:
+```
+docker pull ...
+```
+2. Get our `docker-compose.yml` file.
+3. Run the server:
+```
+docker-compose up -d
+```
+
+### For contributors
+1. Clone the repository and navigate to the project directory:
+``` 
+git clone https://github.com/Hoangson1506/What-Kind-Of-Trash-Is-This.git
+cd What-Kind-Of-Trash-Is-This
+```
+2. Install backend requirements:
+```
+cd backend
+pip install -r requirements.txt
+```
+3. Install frontend requirements:
+```
+cd ../frontend
+npm install
+```
+4. Run the server:
+```
+cd ../backend
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+cd ../frontend
+npm run dev
+```
 
 ## Usage
-
-## Screenshots
-![image](https://github.com/user-attachments/assets/8970ecb2-192a-47bc-94aa-f6561cf87bb2)
-
+After installation, go to your prefer web browser (Microsoft Edge, Google Chrome, Firefox,...) and open [http://localhost:5173](http://localhost:5173). Feel free to mess around and try our web features. The UI already have guides to use the Web.
 
 # Group Information
 Our group comprises of 4 members:
