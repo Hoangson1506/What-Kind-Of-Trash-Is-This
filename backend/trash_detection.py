@@ -36,7 +36,8 @@ async def detect_with_model(image):
         detections.append({
             "trashType": class_map[cls],
             "confidence": round(conf, 2),
-            "bbox": xyxy
+            "bbox": xyxy,
+            "shape": detected_image.shape
         })
 
     content = {

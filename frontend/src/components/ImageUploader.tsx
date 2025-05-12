@@ -1,17 +1,17 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, ImageIcon, Video, Camera } from 'lucide-react';
+import { Upload, ImageIcon, Camera } from 'lucide-react';
 import Webcam from 'react-webcam';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { colorMap, TrashType, hexToRgba } from '../utils/colorUtils';
 
 interface ImageUploaderProps {
-  onImageUploaded: (imageData: string) => void;
-  onVideoUploaded?: (videoBlob: Blob) => void;
+  onImageUploaded: (imageData: string) => void
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoUploaded }) => {
+
+const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded }) => {
   const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const [isWebcamActive, setIsWebcamActive] = useState(false);
@@ -21,7 +21,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const streamInterval = useRef<number>();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -36,18 +35,15 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
         }
       };
       reader.readAsDataURL(file);
-    } else if (file.type.startsWith('video/') && onVideoUploaded) {
-      onVideoUploaded(file);
     } else {
       toast.error('Please upload a valid image or video file');
     }
-  }, [onImageUploaded, onVideoUploaded]);
+  }, [onImageUploaded]);
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
-      'image/*': [],
-      'video/*': []
+      'image/*': []
     },
     maxFiles: 1,
     onDragEnter: () => setIsDragging(true),
@@ -60,79 +56,91 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
     bbox: [number, number, number, number];
     trashType: TrashType;
     confidence: number;
+    shape: [number, number, number];
   }
 
   const drawDetections = (detections: Detection[]) => {
     const canvas = canvasRef.current;
     const video = webcamRef.current?.video;
-
     if (!canvas || !video) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Match canvas size to video size
+    // resize canvas bằng đúng kích thước video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-
-    // Clear previous drawings
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Calculate scaling factors
-    const scaleX = video.videoWidth / 640;
-    const scaleY = video.videoHeight / 640;
-    const scale = Math.min(scaleX, scaleY);
-    const offsetX = (video.videoWidth - (640 * scale)) / 2;
-    const offsetY = (video.videoHeight - (640 * scale)) / 2;
+    // Nếu video bị mirror, bật transform trước khi vẽ
+    const isMirrored = false; // set false nếu không mirror
+    if (isMirrored) {
+      ctx.save();
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+
+    // tỉ lệ chuyển từ coords của model sang pixel video
+    const detectionHeight = detections[0]?.shape[0] ?? 1;
+    const detectionWidth = detections[0]?.shape[1] ?? 1;
+    const scaleX = canvas.width / detectionWidth;
+    const scaleY = canvas.height / detectionHeight;
 
     detections.forEach(detection => {
-      const [x, y, width, height] = detection.bbox;
+      const [x, y, w, h] = detection.bbox;
+      // nếu mirror thì vẽ X = canvas.width - (x+w)*scaleX
+      const px = isMirrored
+        ? canvas.width - (x + w) * scaleX
+        : x * scaleX;
+      const py = y * scaleY;
+      const pw = w * scaleX;
+      const ph = h * scaleY;
 
-      // Scale coordinates from 640x640 to video dimensions
-      const scaledX = (x * scale) + offsetX;
-      const scaledY = (y * scale) + offsetY;
-      const scaledWidth = width * scale;
-      const scaledHeight = height * scale;
-
-      // Set bounding box color based on trash type
-      const boxColor = colorMap[detection.trashType]
+      // vẽ box
+      const boxColor = colorMap[detection.trashType];
       ctx.strokeStyle = boxColor;
       ctx.lineWidth = 2;
-      ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
+      ctx.strokeRect(px, py, pw, ph);
 
-      // Draw label inside top-right corner of the bounding box
+      // vẽ label
       const label = `${detection.trashType} ${(detection.confidence * 100).toFixed(1)}%`;
       ctx.font = '16px Arial';
-      const textWidth = ctx.measureText(label).width;
-      const backgroundWidth = textWidth + 10; // 5px padding on each side
-      const backgroundHeight = 25;
-      const padding = 5;
-      const desiredX = scaledX + (scaledWidth - backgroundWidth) / 2; // Center the label
-      const minX = scaledX + padding;
-      const maxX = scaledX + scaledWidth - backgroundWidth - padding;
-      const actualX = Math.max(minX, Math.min(maxX, desiredX));
-      const backgroundY = scaledY + padding;
-
-
-      // Draw label background
+      const textW = ctx.measureText(label).width;
+      const pad = 4;
+      const lh = 20;
       ctx.fillStyle = hexToRgba(boxColor, 0.3);
-      ctx.fillRect(actualX, backgroundY, backgroundWidth, backgroundHeight);
-
-      // Determine text color based on brightness for readability
-      const r = parseInt(boxColor.slice(1, 3), 16);
-      const g = parseInt(boxColor.slice(3, 5), 16);
-      const b = parseInt(boxColor.slice(5, 7), 16);
+      ctx.fillRect(px, py - lh - pad, textW + pad * 2, lh + pad);
+      // chọn màu chữ tương phản
+      const r = parseInt(boxColor.slice(1, 3), 16),
+        g = parseInt(boxColor.slice(3, 5), 16),
+        b = parseInt(boxColor.slice(5, 7), 16);
       const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-      const textColor = brightness > 125 ? '#000000' : '#ffffff';
-
-      ctx.fillStyle = textColor;
-      ctx.fillText(label, actualX + 5, backgroundY + 20);
+      ctx.fillStyle = brightness > 125 ? '#000' : '#fff';
+      ctx.fillText(label, px + pad, py - pad);
     });
+
+    if (isMirrored) {
+      ctx.restore();
+    }
   };
 
   const startStreaming = useCallback(() => {
-    // Initialize WebSocket connection
     wsRef.current = new WebSocket('ws://localhost:8000/ws');
+    let isWaiting = false;
+
+    const sendNextFrame = () => {
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || isWaiting) return;
+      isWaiting = true;
+      const frame = webcamRef.current?.getScreenshot();
+      if (frame) {
+        wsRef.current.send(JSON.stringify({ image: frame }));
+      }
+    };
+
+    wsRef.current.onopen = () => {
+      setIsStreaming(true);
+      sendNextFrame(); // Start sending frames after connection is open
+    };
 
     wsRef.current.onmessage = (event) => {
       try {
@@ -141,46 +149,42 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
           setDetections(result.detections);
           drawDetections(result.detections);
         }
+        isWaiting = false;
+        sendNextFrame(); // Send next frame after receiving response
       } catch (error) {
         console.error('WebSocket message error:', error);
+        isWaiting = false; // Allow next frame even on error
+        sendNextFrame();
       }
     };
 
-    setIsStreaming(true);
-    streamInterval.current = window.setInterval(() => {
-      if (webcamRef.current && wsRef.current?.readyState === WebSocket.OPEN) {
-        const frame = webcamRef.current.getScreenshot();
-        if (frame) {
-          wsRef.current.send(JSON.stringify({ image: frame }));
-        }
-      }
-    }, 200); // ~30 FPS
+    wsRef.current.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setIsStreaming(false);
+    };
+
+    wsRef.current.onclose = () => {
+      console.log('WebSocket closed');
+      setIsStreaming(false);
+    };
   }, []);
 
   const stopStreaming = useCallback(() => {
-    if (streamInterval.current) {
-      clearInterval(streamInterval.current);
-      setIsStreaming(false);
-      setDetections([]);
-
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx?.clearRect(0, 0, canvas.width, canvas.height);
-      }
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    setIsStreaming(false);
+    setDetections([]);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
     }
   }, []);
 
   useEffect(() => {
     return () => {
-      if (streamInterval.current) {
-        clearInterval(streamInterval.current);
-      }
       if (wsRef.current) {
         wsRef.current.close();
       }
@@ -203,20 +207,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
         >
           <ImageIcon size={20} className="mr-2" />
           {t('upload.types.image')}
-        </button>
-        <button
-          onClick={() => {
-            setUploadType('video');
-            setIsWebcamActive(false);
-            stopStreaming();
-          }}
-          className={`flex items-center px-4 py-2 rounded-lg transition-colors ${uploadType === 'video'
-            ? 'bg-green-600 text-white'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-        >
-          <Video size={20} className="mr-2" />
-          {t('upload.types.video')}
         </button>
         <button
           onClick={() => {
@@ -266,12 +256,17 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
       ) : (
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-xl p-8 transition-colors duration-200 flex flex-col items-center justify-center cursor-pointer h-64 ${isDragging ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-green-400 hover:bg-green-50'
+          className={`border-2 border-dashed rounded-xl p-8 transition-colors duration-200 flex flex-col items-center justify-center cursor-pointer h-64 ${isDragging
+            ? 'border-green-500 bg-green-50'
+            : 'border-gray-300 hover:border-green-400 hover:bg-green-50'
             }`}
         >
           <input {...getInputProps()} />
           <div className="flex flex-col items-center text-center">
-            <div className={`p-3 rounded-full ${isDragging ? 'bg-green-100' : 'bg-gray-100'} mb-4`}>
+            <div
+              className={`p-3 rounded-full ${isDragging ? 'bg-green-100' : 'bg-gray-100'
+                } mb-4`}
+            >
               {isDragging ? (
                 <ImageIcon size={40} className="text-green-500" />
               ) : (
@@ -279,41 +274,65 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded, onVideoU
               )}
             </div>
             <p className="text-lg font-medium mb-1">
-              {isDragging ? t('upload.dropzone.dragActive') : t('upload.dropzone.dragInactive', { type: uploadType === 'video' ? t('upload.types.video').toLowerCase() : t('upload.types.image').toLowerCase() })}
+              {isDragging
+                ? t('upload.dropzone.dragActive')
+                : t('upload.dropzone.dragInactive', {
+                  type: t('upload.types.image').toLowerCase(),
+                })}
             </p>
-            <p className="text-gray-500 mb-4">{t('upload.dropzone.clickToSelect')}</p>
+            <p className="text-gray-500 mb-4">
+              {t('upload.dropzone.clickToSelect')}
+            </p>
             <p className="text-sm text-gray-400">
-              {uploadType === 'video'
-                ? t('upload.dropzone.supportedFormats.video')
-                : t('upload.dropzone.supportedFormats.image')}
+              {t('upload.dropzone.supportedFormats.image')}
             </p>
           </div>
         </div>
       )}
 
       <div className="mt-8">
-        <h3 className="text-lg font-medium mb-4">{t('upload.howItWorks.title')}</h3>
+        <h3 className="text-lg font-medium mb-4">
+          {t('upload.howItWorks.title')}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center mb-2">
-              <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center font-medium mr-2">1</div>
-              <span className="font-medium">{t('upload.howItWorks.steps.upload.title')}</span>
+              <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center font-medium mr-2">
+                1
+              </div>
+              <span className="font-medium">
+                {t('upload.howItWorks.steps.upload.title')}
+              </span>
             </div>
-            <p className="text-sm text-gray-600">{t('upload.howItWorks.steps.upload.description')}</p>
+            <p className="text-sm text-gray-600">
+              {t('upload.howItWorks.steps.upload.description')}
+            </p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center mb-2">
-              <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center font-medium mr-2">2</div>
-              <span className="font-medium">{t('upload.howItWorks.steps.process.title')}</span>
+              <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center font-medium mr-2">
+                2
+              </div>
+              <span className="font-medium">
+                {t('upload.howItWorks.steps.process.title')}
+              </span>
             </div>
-            <p className="text-sm text-gray-600">{t('upload.howItWorks.steps.process.description')}</p>
+            <p className="text-sm text-gray-600">
+              {t('upload.howItWorks.steps.process.description')}
+            </p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center mb-2">
-              <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center font-medium mr-2">3</div>
-              <span className="font-medium">{t('upload.howItWorks.steps.results.title')}</span>
+              <div className="bg-green-100 text-green-800 rounded-full w-6 h-6 flex items-center justify-center font-medium mr-2">
+                3
+              </div>
+              <span className="font-medium">
+                {t('upload.howItWorks.steps.results.title')}
+              </span>
             </div>
-            <p className="text-sm text-gray-600">{t('upload.howItWorks.steps.results.description')}</p>
+            <p className="text-sm text-gray-600">
+              {t('upload.howItWorks.steps.results.description')}
+            </p>
           </div>
         </div>
       </div>

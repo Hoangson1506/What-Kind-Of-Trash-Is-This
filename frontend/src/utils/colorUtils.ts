@@ -4,12 +4,12 @@ export const TRASH_TYPES = [
 ];
 
 export const colorMap: Record<string, string> = {
-    'food': '#FFA500', // orange
-    'glass': '#FFFF00', // yellow
-    'metal': '#800080', // purple
-    'other': '#0000FF', // blue
-    'paper': '#FF0000', // red
-    'plastic': '#008000', // green
+    'food': '#27AEB9', // xanh dương đậm
+    'paper': '#90EE90', // xanh lá nhạt
+    'battery': '#FFC0CB', // hồng
+    'glass': '#00BFFF', // xanh trời
+    'metal': '#FFFFFF', // trắng
+    'other': '#FF69B4', // hồng đậm
 };
 
 // Helper function to convert hex to RGBA

@@ -68,46 +68,6 @@ const TrashDetectionPage: React.FC = () => {
     }
   };
 
-  const processVideo = async (videoBlob: Blob) => {
-    try {
-      setIsProcessing(true);
-
-      const formData = new FormData();
-      formData.append('video', videoBlob);
-
-      const response = await fetch('http://127.0.0.1:8000/inference-video', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to process video');
-      }
-
-      const result = await response.json();
-      toast.success('Video processed successfully');
-
-      if (result.frames && result.frames.length > 0) {
-        const lastFrame = result.frames[result.frames.length - 1];
-        const processedResult: ProcessedImage = {
-          id: Date.now().toString(),
-          originalImage: lastFrame.original,
-          processedImage: lastFrame.processed,
-          detections: lastFrame.detections || [],
-          timestamp: new Date()
-        };
-
-        setProcessedResult(processedResult);
-        setRecentImages(prev => [processedResult, ...prev].slice(0, 5));
-      }
-    } catch (error) {
-      console.error('Error processing video:', error);
-      toast.error('Failed to process video. Please try again.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
   const handleFeedbackSubmit = async (feedback: FeedbackData) => {
     try {
       const response = await fetch('http://127.0.0.1:8000/feedback', {
@@ -182,7 +142,6 @@ const TrashDetectionPage: React.FC = () => {
             {!currentImage ? (
               <ImageUploader
                 onImageUploaded={processImage}
-                onVideoUploaded={processVideo}
               />
             ) : (
               <ResultsDisplay
