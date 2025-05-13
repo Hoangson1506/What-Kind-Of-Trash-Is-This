@@ -21,3 +21,8 @@ class LabelData(BaseModel):
 class UserLabeledData(BaseModel):
     image: str  # base64 string
     labels: List[LabelData]
+
+
+class AdminSignUp(BaseModel):
+    username: str
+    password: str

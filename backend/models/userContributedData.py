@@ -11,7 +11,7 @@ class UserContributedData(Base):
     labels = Column(Text)  # JSON string
     added_at = Column(DateTime, default=func.now())
     is_verified = Column(Boolean, default=False)
-    verified_by = Column(Integer, ForeignKey(
-        "AdminAccounts.admin_id"), default=None)
+    verified_by = Column(Text, ForeignKey(
+        "AdminAccounts.login_name"), default=None)
 
     verifier = relationship('AdminAccounts', back_populates='verified_data')

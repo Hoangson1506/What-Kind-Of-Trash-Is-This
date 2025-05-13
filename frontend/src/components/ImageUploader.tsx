@@ -125,7 +125,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded }) => {
   };
 
   const startStreaming = useCallback(() => {
-    wsRef.current = new WebSocket('ws://localhost:8000/ws');
+    wsRef.current = new WebSocket('ws://localhost:8000/inference/ws');
     let isWaiting = false;
 
     const sendNextFrame = () => {

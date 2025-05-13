@@ -6,7 +6,7 @@ export const TRASH_TYPES = [
 export const colorMap: Record<string, string> = {
     'food': '#27AEB9', // xanh dương đậm
     'paper': '#90EE90', // xanh lá nhạt
-    'battery': '#FFC0CB', // hồng
+    'plastic': '#FFC0CB', // hồng
     'glass': '#00BFFF', // xanh trời
     'metal': '#FFFFFF', // trắng
     'other': '#FF69B4', // hồng đậm

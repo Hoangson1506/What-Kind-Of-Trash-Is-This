@@ -6,7 +6,7 @@ from database import Base, engine
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from routers import inference_routers, admin_routers
+from routers import inference_routers, admin_routers, auth_routers, user_routers
 from trash_detection import init_model
 from database import Base, engine
 from config import MODEL_NAME, MODEL_DIR
@@ -40,6 +40,9 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-app.include_router(inference_routers.router, prefix='', tags=['files'])
+app.include_router(inference_routers.router,
+                   prefix='/inference', tags=['files'])
 app.include_router(admin_routers.router, prefix='/admin', tags=['admin'])
+app.include_router(auth_routers.router, prefix='/auth', tags=['auth'])
+app.include_router(user_routers.router, prefix='/user', tags=['user'])
 app.mount("/images", StaticFiles(directory="images"), name="static")

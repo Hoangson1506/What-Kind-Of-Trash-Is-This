@@ -36,7 +36,7 @@ const TrashDetectionPage: React.FC = () => {
       setCurrentImage(imageData);
       setProcessedResult(null);
 
-      const response = await fetch('http://127.0.0.1:8000/inference-image', {
+      const response = await fetch('http://127.0.0.1:8000/inference/image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ const TrashDetectionPage: React.FC = () => {
 
   const handleFeedbackSubmit = async (feedback: FeedbackData) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/admin/save-user-response', {
+      const response = await fetch('http://127.0.0.1:8000/user/save-user-response', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const TrashDetectionPage: React.FC = () => {
     try {
       if (!currentImage) return;
 
-      const response = await fetch('http://127.0.0.1:8000/admin/save-user-data', {
+      const response = await fetch('http://127.0.0.1:8000/user/save-user-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

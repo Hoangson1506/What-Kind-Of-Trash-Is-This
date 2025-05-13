@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from models.webStatistics import WebStatistics
 import base64
 import io
 import json
@@ -9,7 +10,7 @@ from trash_detection import detect_with_model
 router = APIRouter()
 
 
-@router.post('/inference-image')
+@router.post('/image')
 async def inference_image(requests: ImageRequest):
     """Get the uploaded image and preprocess to prepare for inference step
 
