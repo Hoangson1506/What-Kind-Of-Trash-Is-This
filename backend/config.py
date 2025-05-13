@@ -12,3 +12,8 @@ class_map = {
     4: 'plastic',
     5: 'other'
 }
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # đường dẫn đến backend/
+MODEL_DIR = os.path.join(BASE_DIR, "AI_models")
+DATABASE_URL = "sqlite+aiosqlite:///./database/app.db"
+IMG_DIR = os.path.join(BASE_DIR, "images")

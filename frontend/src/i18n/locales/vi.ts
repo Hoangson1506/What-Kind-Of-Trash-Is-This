@@ -1,15 +1,15 @@
 export default {
     header: {
-        title: 'Đây là rác gì?',
+        title: 'Loại rác rưởi gì đây?',
         home: 'Trang chủ',
         about: 'Về chúng tôi'
     },
     about: {
-        title: 'Đội ngũ của chúng tôi',
+        title: 'Đội ngũ phát triển',
         description: 'Chúng tôi đam mê sử dụng công nghệ để tạo ra một tương lai sạch hơn, bền vững hơn. Đội ngũ đa dạng của chúng tôi kết hợp chuyên môn về AI, khoa học môi trường và phát triển phần mềm.',
         mission: {
-            title: 'Sứ mệnh của chúng tôi',
-            description: 'Với tình trạng ô nhiễm môi trường đang ở mức báo động, nhóm sinh viên đại học chuyên ngành Trí tuệ nhân tạo của chúng tôi tại Việt Nam mong muốn đóng góp một phần kiến thức của mình vào phong trào bảo vệ môi trường. Chúng tôi đam mê việc ứng dụng những gì đã học để giúp đất nước trở nên xanh sạch hơn. Ở Việt Nam, dù có nhiều nỗ lực cải thiện môi trường, nhưng vẫn còn rất nhiều người chưa biết cách phân loại rác hoặc xử lý rác thải đúng cách. Website của chúng tôi hướng đến việc giải quyết vấn đề đó bằng cách cho phép người dùng tải lên hình ảnh, video về rác thải, hoặc sử dụng webcam trực tiếp để nhận phản hồi tức thì về loại rác đó, kèm theo những mẹo đơn giản để xử lý. Chúng tôi hy vọng công cụ này sẽ giúp việc quản lý rác thải trở nên dễ dàng hơn cho mọi người, và góp phần hỗ trợ nỗ lực xây dựng một tương lai bền vững hơn cho Việt Nam.'
+            title: 'Sứ mệnh',
+            description: 'Với tình trạng ô nhiễm môi trường đang ở mức báo động, nhóm sinh viên đại học chuyên ngành Trí tuệ nhân tạo của chúng tôi tại Việt Nam mong muốn đóng góp một phần kiến thức của mình vào phong trào bảo vệ môi trường. Chúng tôi khao khát được ứng dụng những gì đã học để giúp đất nước trở nên xanh sạch đẹp hơn. Ở Việt Nam, dù có nhiều nỗ lực cải thiện môi trường, nhưng vẫn còn rất nhiều người chưa biết cách phân loại rác hoặc xử lý rác thải đúng cách. Website của chúng tôi hướng đến việc giải quyết vấn đề đó bằng cách cho phép người dùng tải lên hình ảnh, video về rác thải, hoặc sử dụng webcam trực tiếp để nhận phản hồi về loại rác đó, kèm theo những mẹo đơn giản để xử lý. Chúng tôi hy vọng công cụ này sẽ giúp việc quản lý rác thải trở nên dễ dàng hơn cho mọi người, và góp phần hỗ trợ nỗ lực xây dựng một tương lai bền vững hơn cho Việt Nam.'
         }
     },
     upload: {
@@ -55,7 +55,7 @@ export default {
         detecting: 'Đang nhận diện loại rác...',
         summary: {
             title: 'Tổng kết nhận diện',
-            confidence: 'Độ chính xác: {{value}}%'
+            confidence: 'Độ tự tin: {{value}}%'
         },
         feedback: {
             title: 'Phản hồi',
@@ -70,7 +70,7 @@ export default {
     map: {
         title: 'Điểm thu gom rác gần đây',
         getDirections: 'Chỉ đường',
-        acceptedMaterials: 'Vật liệu được chấp nhận:',
+        acceptedMaterials: 'Loại rác thải được chấp nhận:',
         userLocation: 'Vị trí của bạn'
     },
     history: {
@@ -114,44 +114,44 @@ export default {
     trashes: {
         food: {
             name: 'Thực phẩm',
-            description: 'Rác thực phẩm và thức ăn thừa, bao gồm vụn thức ăn, vỏ rau củ và thức ăn chưa sử dụng',
+            description: 'Rác thực phẩm có thể là thức ăn thừa, bao gồm vụn thức ăn, vỏ rau củ và thức ăn chưa sử dụng',
             disposalGuide: {
-                instructions: 'Tách rác thực phẩm khỏi bao bì không phân hủy được như nhựa hoặc giấy để tránh nhiễm bẩn. Giữ riêng rác thực phẩm khỏi chất thải tái chế hoặc rác thông thường để hỗ trợ hệ thống ủ phân hoặc thu gom rác thực phẩm. Nếu có thể, ủ phân các mảnh vụn thực phẩm như vỏ rau củ, lõi trái cây và bã cà phê trong thùng ủ phân tại nhà hoặc thông qua chương trình địa phương. Đặt rác thực phẩm vào thùng chứa riêng, sử dụng túi phân hủy sinh học nếu được yêu cầu bởi dịch vụ quản lý chất thải địa phương.'
+                instructions: 'Tách rác thực phẩm khỏi bao bì không phân hủy được như nhựa để tránh nhiễm bẩn. Giữ riêng rác thực phẩm khỏi chất thải tái chế hoặc rác thông thường để hỗ trợ hệ thống ủ phân hoặc thu gom rác thực phẩm. Nếu có thể, ủ phân các mảnh vụn thực phẩm như vỏ rau củ, lõi trái cây và bã cà phê trong thùng ủ phân tại nhà hoặc thông qua chương trình địa phương. Đặt rác thực phẩm vào thùng chứa riêng, sử dụng túi phân hủy sinh học nếu được yêu cầu bởi đơn vị quản lý chất thải địa phương.'
             }
         },
         glass: {
             name: 'Thủy tinh',
             description: 'Chai, lọ và hộp đựng bằng thủy tinh, như chai rượu, lọ thủy tinh và hộp đựng thực phẩm',
             disposalGuide: {
-                instructions: 'Rửa sạch các vật dụng thủy tinh để loại bỏ cặn thức ăn hoặc chất lỏng, đảm bảo chúng có thể tái chế. Tháo nắp kim loại hoặc nhựa, vì chúng thường được tái chế riêng hoặc vứt bỏ. Nếu chương trình địa phương yêu cầu, phân loại thủy tinh theo màu (trong suốt, xanh lá, nâu) để đơn giản hóa quá trình xử lý. Đặt thủy tinh đã làm sạch vào thùng tái chế thủy tinh riêng hoặc tuân theo hướng dẫn thu gom tại lề đường.'
+                instructions: 'Rửa sạch các vật dụng thủy tinh để loại bỏ cặn thức ăn hoặc chất lỏng, đảm bảo chúng có thể tái chế. Tháo nắp kim loại hoặc nhựa, vì chúng thường được tái chế riêng hoặc vứt bỏ. Nếu đơn vị địa phương yêu cầu, phân loại thủy tinh theo màu (trong suốt, xanh lá, nâu, ...) để đơn giản hóa quá trình xử lý. Đặt thủy tinh đã làm sạch vào thùng tái chế thủy tinh riêng hoặc tuân theo hướng dẫn thu gom.'
             }
         },
         metal: {
             name: 'Kim loại',
             description: 'Các vật dụng kim loại bao gồm lon, giấy bạc và kim loại phế liệu như lon thiếc, lon phun sương và khay giấy bạc',
             disposalGuide: {
-                instructions: 'Làm sạch và rửa lon kim loại để loại bỏ cặn thức ăn hoặc chất lỏng, tránh nhiễm bẩn. Gỡ nhãn giấy hoặc nhựa khi có thể, vì chúng có thể cần được tái chế hoặc xử lý riêng. Nghiền nát lon nhôm hoặc thiếc để tiết kiệm không gian và dễ thu gom. Đặt các vật dụng kim loại đã chuẩn bị vào thùng tái chế kim loại riêng hoặc theo lịch thu gom tái chế tại lề đường.'
+                instructions: 'Làm sạch và rửa lon kim loại để loại bỏ cặn thức ăn hoặc chất lỏng, tránh nhiễm bẩn. Gỡ nhãn giấy hoặc nhựa khi có thể, vì chúng có thể cần được tái chế hoặc xử lý riêng. Nghiền nát lon nhôm hoặc thiếc để tiết kiệm không gian và dễ thu gom. Sau đó đặt chúng vào thùng tái chế kim loại riêng hoặc theo lịch thu gom tái chế địa phương.'
             }
         },
         paper: {
             name: 'Giấy',
             description: 'Các sản phẩm giấy bao gồm báo, bìa cứng và giấy văn phòng như hộp ngũ cốc, giấy in và hộp bìa cứng',
             disposalGuide: {
-                instructions: 'Tái chế giấy sạch và khô trong thùng tái chế giấy. Tránh tái chế giấy bẩn hoặc dính thức ăn. Gỡ cửa sổ nhựa khỏi phong bì và làm phẳng hộp bìa cứng để tiết kiệm không gian. Nếu có thể, sử dụng máy hủy giấy cho các tài liệu nhạy cảm trước khi tái chế. Đặt các vật dụng giấy đã chuẩn bị vào thùng tái chế giấy riêng hoặc theo lịch thu gom tái chế tại lề đường.'
+                instructions: 'Tái chế giấy sạch và khô trong thùng tái chế giấy. Tránh tái chế giấy bẩn hoặc dính thức ăn. Làm phẳng hộp bìa cứng để tiết kiệm không gian. Nếu có thể, sử dụng máy hủy giấy cho các tài liệu nhạy cảm trước khi tái chế. Đặt các vật dụng giấy đã chuẩn bị vào thùng tái chế giấy riêng hoặc theo lịch thu gom tái chế địa phương.'
             }
         },
         plastic: {
             name: 'Nhựa',
             description: 'Hộp đựng, chai và vật liệu đóng gói bằng nhựa như chai nước, hộp đựng thực phẩm và túi nhựa',
             disposalGuide: {
-                instructions: 'R KL rửa sạch các hộp đựng và tái chế trong thùng tái chế nhựa riêng. Tháo nắp và nhãn nếu được yêu cầu. Tránh tái chế túi nhựa trong thùng tại lề đường; sử dụng các điểm thu gom riêng. Nếu có thể, chọn các giải pháp thay thế có thể tái sử dụng để giảm rác nhựa. Đặt các vật dụng nhựa đã làm sạch vào thùng tái chế nhựa riêng hoặc theo lịch thu gom tái chế tại lề đường.'
+                instructions: 'Rửa sạch các hộp đựng và tái chế trong thùng tái chế nhựa riêng. Tháo nắp và nhãn nếu được yêu cầu. Tập trung rác các điểm thu gom riêng. Nếu có thể, chọn các giải pháp thay thế có thể tái sử dụng để giảm rác thải nhựa. Đặt rác thải nhựa đã làm sạch vào thùng tái chế nhựa riêng hoặc theo lịch thu gom tái chế địa phương.'
             }
         },
         other: {
             name: 'Khác',
-            description: 'Các vật dụng linh tinh không thuộc các danh mục khác, như dây cao su, đồ chơi hỏng và bao bì không thể tái chế',
+            description: 'Các vật dụng linh tinh khác như dây cao su, đồ chơi hỏng và bao bì không thể tái chế',
             disposalGuide: {
-                instructions: 'Vứt vào thùng rác thông thường. Kiểm tra hướng dẫn địa phương cho các vật dụng cụ thể. Tránh đặt các vật không thể tái chế vào thùng tái chế để tránh nhiễm bẩn. Nếu có thể, quyên góp hoặc tái sử dụng các vật dụng trước khi vứt bỏ. Đặt các vật dụng linh tinh vào thùng rác riêng hoặc tuân theo hướng dẫn quản lý chất thải địa phương.'
+                instructions: 'Vứt vào thùng rác thông thường. Kiểm tra hướng dẫn địa phương cho các vật dụng cụ thể. Tránh đặt các vật không thể tái chế vào thùng tái chế để tránh nhiễm bẩn. Nếu có thể, quyên góp hoặc tái sử dụng các vật dụng trước khi vứt bỏ. Đặt rác linh tinh vào thùng rác riêng hoặc tuân theo hướng dẫn quản lý chất thải địa phương.'
             }
         }
     }

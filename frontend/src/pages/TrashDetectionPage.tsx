@@ -70,7 +70,7 @@ const TrashDetectionPage: React.FC = () => {
 
   const handleFeedbackSubmit = async (feedback: FeedbackData) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/feedback', {
+      const response = await fetch('http://127.0.0.1:8000/admin/save-user-response', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const TrashDetectionPage: React.FC = () => {
     try {
       if (!currentImage) return;
 
-      const response = await fetch('http://127.0.0.1:8000/contribute', {
+      const response = await fetch('http://127.0.0.1:8000/admin/save-user-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
