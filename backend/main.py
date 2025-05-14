@@ -26,7 +26,7 @@ async def startup_event():
     # create a new database if there is none
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    model_path = os.path.join(MODEL_DIR, f"{MODEL_NAME}.pt")
+    model_path = os.path.join(MODEL_DIR, f"{MODEL_NAME}.onnx")
     if not os.path.isfile(model_path):
         raise Exception(f"Model file {model_path} does not exist")
     init_model(model_path)

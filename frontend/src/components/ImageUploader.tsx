@@ -53,7 +53,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded }) => {
   });
 
   interface Detection {
-    bbox: [number, number, number, number];
+    bbox: [number, number, number, number]; // [top_x, top_y, bottom_x, bottom_y]
     trashType: TrashType;
     confidence: number;
     shape: [number, number, number];
@@ -80,43 +80,50 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUploaded }) => {
       ctx.scale(-1, 1);
     }
 
-    // tỉ lệ chuyển từ coords của model sang pixel video
-    const detectionHeight = detections[0]?.shape[0] ?? 1;
-    const detectionWidth = detections[0]?.shape[1] ?? 1;
-    const scaleX = canvas.width / detectionWidth;
-    const scaleY = canvas.height / detectionHeight;
-
     detections.forEach(detection => {
-      const [x, y, w, h] = detection.bbox;
-      // nếu mirror thì vẽ X = canvas.width - (x+w)*scaleX
-      const px = isMirrored
-        ? canvas.width - (x + w) * scaleX
-        : x * scaleX;
-      const py = y * scaleY;
-      const pw = w * scaleX;
-      const ph = h * scaleY;
+      const [x1, y1, x2, y2] = detection.bbox;
+      const x = x1, y = y1, w = x2 - x1, h = y2 - y1;
 
-      // vẽ box
+      // Mirror logic
+      const px = isMirrored
+        ? canvas.width - (x + w)
+        : x;
+      const py = y;
+      const pw = w;
+      const ph = h;
+
+      // Draw box
       const boxColor = colorMap[detection.trashType];
       ctx.strokeStyle = boxColor;
       ctx.lineWidth = 2;
       ctx.strokeRect(px, py, pw, ph);
 
-      // vẽ label
+      // Draw label on top left corner
       const label = `${detection.trashType} ${(detection.confidence * 100).toFixed(1)}%`;
       ctx.font = '16px Arial';
-      const textW = ctx.measureText(label).width;
-      const pad = 4;
-      const lh = 20;
+      ctx.textBaseline = 'top';
+
+      const textWidth = ctx.measureText(label).width;
+      const padding = 5;
+      const backgroundWidth = textWidth + padding * 2;
+      const backgroundHeight = 16 + padding * 2;
+
+      const bgX = px + padding;
+      const bgY = py + padding;
+
+      // Draw background
       ctx.fillStyle = hexToRgba(boxColor, 0.3);
-      ctx.fillRect(px, py - lh - pad, textW + pad * 2, lh + pad);
-      // chọn màu chữ tương phản
+      ctx.fillRect(bgX, bgY, backgroundWidth, backgroundHeight);
+
+      // Determine text color based on brightness for readability
       const r = parseInt(boxColor.slice(1, 3), 16),
         g = parseInt(boxColor.slice(3, 5), 16),
         b = parseInt(boxColor.slice(5, 7), 16);
       const brightness = (r * 299 + g * 587 + b * 114) / 1000;
       ctx.fillStyle = brightness > 125 ? '#000' : '#fff';
-      ctx.fillText(label, px + pad, py - pad);
+
+      // Draw text
+      ctx.fillText(label, bgX + padding, bgY + padding);
     });
 
     if (isMirrored) {

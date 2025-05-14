@@ -9,7 +9,7 @@ model = None
 
 def init_model(model_path):
     global model
-    model = YOLO(model_path)
+    model = YOLO(model_path, task="detect")
 
 
 async def detect_with_model(image):
@@ -18,7 +18,9 @@ async def detect_with_model(image):
     Args:
         image (Image)
     """
+    original_width, original_height = image.size
     results = model(image)[0]
+
     detected_image = results.plot()
 
     # Encode ndarray image to base64
@@ -32,7 +34,13 @@ async def detect_with_model(image):
     for box in results.boxes:
         cls = int(box.cls[0])
         conf = float(box.conf[0])
-        xyxy = [round(x, 2) for x in box.xyxy[0].tolist()]
+        xyxy = [x for x in box.xyxyn[0].tolist()]
+        # Rescale bounding box to original image size
+        xyxy[0] = int(xyxy[0] * original_width)
+        xyxy[1] = int(xyxy[1] * original_height)
+        xyxy[2] = int(xyxy[2] * original_width)
+        xyxy[3] = int(xyxy[3] * original_height)
+
         detections.append({
             "trashType": class_map[cls],
             "confidence": round(conf, 2),
