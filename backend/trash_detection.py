@@ -1,7 +1,8 @@
 from ultralytics import YOLO
 from PIL import Image
-from io import BytesIO
+import cv2
 import base64
+import time
 from config import class_map
 
 model = None
@@ -12,7 +13,7 @@ def init_model(model_path):
     model = YOLO(model_path, task="detect")
 
 
-async def detect_with_model(image):
+async def detect_with_model(image: Image.Image):
     """Make detection on image
 
     Args:
@@ -23,11 +24,13 @@ async def detect_with_model(image):
 
     detected_image = results.plot()
 
-    # Encode ndarray image to base64
-    image_pil = Image.fromarray(detected_image[..., ::-1])  # BGR to RGB
-    buffer = BytesIO()
-    image_pil.save(buffer, format='JPEG')
-    img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    # Encode image to base64
+    t1 = time.perf_counter()
+    rgb_image = detected_image[..., ::-1]
+    _, buffer = cv2.imencode('.jpg', rgb_image)
+    img_base64 = base64.b64encode(buffer).decode("utf-8")
+    t2 = time.perf_counter()
+    print(f"Image encoding took {t2 - t1:0.4f} seconds")
 
     # Prepare detection result
     detections = []

@@ -14,6 +14,6 @@ class AdminAccounts(Base):
     is_disabled = Column(Boolean, default=False)
 
     verified_data = relationship(
-        'UserContributedData', back_populates='verifier')
+        'UserContributedData', back_populates='verifier', lazy='selectin')
     verified_responses = relationship(
-        'UserResponses', back_populates='verifier')
+        'UserResponses', back_populates='verifier', lazy='selectin')

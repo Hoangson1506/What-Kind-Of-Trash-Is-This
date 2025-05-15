@@ -66,5 +66,4 @@ async def save_base64_image(base64_str: str, image_id: str = None, folder: str =
     with open(filepath, "wb") as f:
         f.write(image_data)
 
-    # Trả về path tương đối (để lưu vào DB)
-    return os.path.join("/images", filename)
+    return filename

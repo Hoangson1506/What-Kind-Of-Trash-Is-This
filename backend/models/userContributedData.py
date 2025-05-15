@@ -10,8 +10,9 @@ class UserContributedData(Base):
     image_path = Column(Text, nullable=False)
     labels = Column(Text)  # JSON string
     added_at = Column(DateTime, default=func.now())
-    is_verified = Column(Boolean, default=False)
+    is_verified = Column(Boolean, nullable=True)
     verified_by = Column(Text, ForeignKey(
         "AdminAccounts.login_name"), default=None)
 
-    verifier = relationship('AdminAccounts', back_populates='verified_data')
+    verifier = relationship(
+        'AdminAccounts', back_populates='verified_data', lazy='selectin')

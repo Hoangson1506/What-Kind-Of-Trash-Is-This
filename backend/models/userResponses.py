@@ -12,9 +12,9 @@ class UserResponses(Base):
     is_right = Column(Boolean, nullable=False)
     comment = Column(Text, nullable=True)
     added_at = Column(DateTime, default=func.now())
-    is_verified = Column(Boolean, default=False)
+    is_verified = Column(Boolean, nullable=True)
     verified_by = Column(Text, ForeignKey(
         "AdminAccounts.login_name"), default=None)
 
     verifier = relationship(
-        'AdminAccounts', back_populates='verified_responses')
+        'AdminAccounts', back_populates='verified_responses', lazy='selectin')

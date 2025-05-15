@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from routers import inference_routers, admin_routers, auth_routers, user_routers
 from trash_detection import init_model
 from database import Base, engine
-from config import MODEL_NAME, MODEL_DIR
+from config import MODEL_NAME, MODEL_DIR, MODEL_FORMAT
 import os
 
 app = FastAPI()
@@ -26,7 +26,7 @@ async def startup_event():
     # create a new database if there is none
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    model_path = os.path.join(MODEL_DIR, f"{MODEL_NAME}.onnx")
+    model_path = os.path.join(MODEL_DIR, f"{MODEL_NAME}.{MODEL_FORMAT}")
     if not os.path.isfile(model_path):
         raise Exception(f"Model file {model_path} does not exist")
     init_model(model_path)
