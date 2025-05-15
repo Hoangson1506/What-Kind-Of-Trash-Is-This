@@ -116,6 +116,16 @@ export default {
             name: 'Thực phẩm',
             description: 'Rác thực phẩm có thể là thức ăn thừa, bao gồm vụn thức ăn, vỏ rau củ và thức ăn chưa sử dụng',
             disposalGuide: {
+                references: {
+                    link1: {
+                        text: 'Các giải pháp xử lý rác thực phẩm',
+                        url: 'https://phunuvietnam.vn/5-giai-phap-xu-ly-rac-thai-thuc-pham-tranh-lang-phi-giam-thieu-o-nhiem-moi-truong-20241124103917345.htm'
+                    },
+                    link2: {
+                        text: 'Thực trạng và cách xử lý',
+                        url: 'https://thinkrecycle.vn/blog/giai-phap-tai-che-6/rac-thai-thuc-pham-102'
+                    }
+                },
                 instructions: 'Tách rác thực phẩm khỏi bao bì không phân hủy được như nhựa để tránh nhiễm bẩn. Giữ riêng rác thực phẩm khỏi chất thải tái chế hoặc rác thông thường để hỗ trợ hệ thống ủ phân hoặc thu gom rác thực phẩm. Nếu có thể, ủ phân các mảnh vụn thực phẩm như vỏ rau củ, lõi trái cây và bã cà phê trong thùng ủ phân tại nhà hoặc thông qua chương trình địa phương. Đặt rác thực phẩm vào thùng chứa riêng, sử dụng túi phân hủy sinh học nếu được yêu cầu bởi đơn vị quản lý chất thải địa phương.'
             }
         },
@@ -123,6 +133,16 @@ export default {
             name: 'Thủy tinh',
             description: 'Chai, lọ và hộp đựng bằng thủy tinh, như chai rượu, lọ thủy tinh và hộp đựng thực phẩm',
             disposalGuide: {
+                references: {
+                    link1: {
+                        text: 'Xử lý rác thủy tinh an toàn, hiệu quả',
+                        url: 'https://hoabinhxanh.vn/xu-ly-rac-thai-thuy-tinh-an-toan-hieu-qua/'
+                    },
+                    link2: {
+                        text: 'Thực trạng và cách xử lý',
+                        url: 'https://moitruongdci.com/xu-ly-rac-thai-thuy-tinh/'
+                    }
+                },
                 instructions: 'Rửa sạch các vật dụng thủy tinh để loại bỏ cặn thức ăn hoặc chất lỏng, đảm bảo chúng có thể tái chế. Tháo nắp kim loại hoặc nhựa, vì chúng thường được tái chế riêng hoặc vứt bỏ. Nếu đơn vị địa phương yêu cầu, phân loại thủy tinh theo màu (trong suốt, xanh lá, nâu, ...) để đơn giản hóa quá trình xử lý. Đặt thủy tinh đã làm sạch vào thùng tái chế thủy tinh riêng hoặc tuân theo hướng dẫn thu gom.'
             }
         },
@@ -130,6 +150,16 @@ export default {
             name: 'Kim loại',
             description: 'Các vật dụng kim loại bao gồm lon, giấy bạc và kim loại phế liệu như lon thiếc, lon phun sương và khay giấy bạc',
             disposalGuide: {
+                references: {
+                    link1: {
+                        text: 'Giải pháp xử lý chất thải kim loại cho doanh nghiệp',
+                        url: 'https://moitruongdci.com/giai-phap-xu-ly-chat-thai-kim-loai-nang-cho-doanh-nghiep/#:~:text=Ph%C6%B0%C6%A1ng%20ph%C3%A1p%20nhi%E1%BB%87t%20s%E1%BB%AD%20d%E1%BB%A5ng,n%E1%BA%B7ng%20kh%E1%BB%8Fi%20c%C3%A1c%20t%E1%BA%A1p%20ch%E1%BA%A5t.'
+                    },
+                    link2: {
+                        text: 'Giảm phát thải kim loại (trang nước ngoài)',
+                        url: 'https://www.businesswaste.co.uk/reduce-waste/how-to-reduce-metal-waste/'
+                    }
+                },
                 instructions: 'Làm sạch và rửa lon kim loại để loại bỏ cặn thức ăn hoặc chất lỏng, tránh nhiễm bẩn. Gỡ nhãn giấy hoặc nhựa khi có thể, vì chúng có thể cần được tái chế hoặc xử lý riêng. Nghiền nát lon nhôm hoặc thiếc để tiết kiệm không gian và dễ thu gom. Sau đó đặt chúng vào thùng tái chế kim loại riêng hoặc theo lịch thu gom tái chế địa phương.'
             }
         },
@@ -137,6 +167,16 @@ export default {
             name: 'Giấy',
             description: 'Các sản phẩm giấy bao gồm báo, bìa cứng và giấy văn phòng như hộp ngũ cốc, giấy in và hộp bìa cứng',
             disposalGuide: {
+                references: {
+                    link1: {
+                        text: 'Rác thải giấy là gì và cách xử lý',
+                        url: 'https://xequetduong.vn/rac-thai-giay'
+                    },
+                    link2: {
+                        text: 'Cách tái chế rác giấy',
+                        url: 'https://www.cleanipedia.com/vn/su-ben-vung/cach-tai-che-giay-tai-nha.html'
+                    }
+                },
                 instructions: 'Tái chế giấy sạch và khô trong thùng tái chế giấy. Tránh tái chế giấy bẩn hoặc dính thức ăn. Làm phẳng hộp bìa cứng để tiết kiệm không gian. Nếu có thể, sử dụng máy hủy giấy cho các tài liệu nhạy cảm trước khi tái chế. Đặt các vật dụng giấy đã chuẩn bị vào thùng tái chế giấy riêng hoặc theo lịch thu gom tái chế địa phương.'
             }
         },
@@ -144,6 +184,20 @@ export default {
             name: 'Nhựa',
             description: 'Hộp đựng, chai và vật liệu đóng gói bằng nhựa như chai nước, hộp đựng thực phẩm và túi nhựa',
             disposalGuide: {
+                references: {
+                    link1: {
+                        text: 'Các phương pháp tái chế nhựa',
+                        url: 'https://carnovn.com.vn/phuong-phap-tai-che-nhua/'
+                    },
+                    link2: {
+                        text: 'Những biện pháp xử lý rác thải nhựa hiệu quả',
+                        url: 'https://provietnam.com.vn/tin-tuc/nhung-bien-phap-xu-ly-rac-thai-nhua-hieu-qua-nhat/'
+                    },
+                    link3: {
+                        text: 'Phân loại và tái chế rác thải nhựa đúng cách',
+                        url: 'https://doanthanhnien.vn/tin-tuc/tuoi-tre-tham-gia-bao-ve-moi-truong/phan-loai-va-tai-che-rac-thai-nhua-dung-cach'
+                    }
+                },
                 instructions: 'Rửa sạch các hộp đựng và tái chế trong thùng tái chế nhựa riêng. Tháo nắp và nhãn nếu được yêu cầu. Tập trung rác các điểm thu gom riêng. Nếu có thể, chọn các giải pháp thay thế có thể tái sử dụng để giảm rác thải nhựa. Đặt rác thải nhựa đã làm sạch vào thùng tái chế nhựa riêng hoặc theo lịch thu gom tái chế địa phương.'
             }
         },

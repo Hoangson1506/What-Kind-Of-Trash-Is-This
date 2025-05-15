@@ -167,7 +167,6 @@ const TrashDetectionPage: React.FC = () => {
                         {t('results.summary.confidence', { value: Math.round(detection.confidence * 100) })}
                       </span>
                     </div>
-                    <DisposalInstructions trashType={detection.trashType} />
                   </div>
                 ))}
               </div>
@@ -190,50 +189,6 @@ const TrashDetectionPage: React.FC = () => {
   );
 };
 
-const DisposalInstructions: React.FC<{ trashType: string }> = ({ trashType }) => {
-  const instructions: Record<string, { text: string, color: string }> = {
-    'plastic': {
-      text: 'Rinse containers and recycle in designated plastic bins. Remove caps and labels if required.',
-      color: 'bg-blue-100 text-blue-800'
-    },
-    'paper': {
-      text: 'Recycle clean, dry paper in paper recycling bins. Avoid recycling soiled or food-contaminated paper.',
-      color: 'bg-yellow-100 text-yellow-800'
-    },
-    'glass': {
-      text: 'Rinse glass containers and recycle in glass recycling bins. Remove caps and lids.',
-      color: 'bg-purple-100 text-purple-800'
-    },
-    'metal': {
-      text: 'Clean metal cans and containers and recycle in metal recycling bins.',
-      color: 'bg-gray-100 text-gray-800'
-    },
-    'other': {
-      text: 'Dispose of in regular trash bins. Check local guidelines for specific items.',
-      color: 'bg-gray-100 text-gray-800'
-    },
-    'food': {
-      text: 'Compost in designated organic waste bins or home composting systems.',
-      color: 'bg-green-100 text-green-800'
-    },
-    'E-waste': {
-      text: 'Take to designated e-waste collection points. Never dispose of in regular trash.',
-      color: 'bg-red-100 text-red-800'
-    }
-  };
 
-  const defaultInstructions = {
-    text: 'Please check with local authorities for proper disposal guidelines.',
-    color: 'bg-gray-100 text-gray-800'
-  };
-
-  const { text, color } = instructions[trashType] || defaultInstructions;
-
-  return (
-    <div className={`${color} rounded-lg p-4 mt-3`}>
-      <p>{text}</p>
-    </div>
-  );
-};
 
 export default TrashDetectionPage;

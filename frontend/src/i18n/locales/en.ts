@@ -116,6 +116,16 @@ export default {
             name: 'Food',
             description: 'Food waste and leftovers, including scraps, peels, and uneaten food',
             disposalGuide: {
+                references: {
+                    link1: {
+                        text: 'Reduce Food Waste at Home',
+                        url: 'https://rare.org/reduce-food-waste-at-home/?gad_source=1&gad_campaignid=22284152848&gbraid=0AAAAAD8J7WzITriec6HTzYSqJD0uZiyus&gclid=Cj0KCQjwoZbBBhDCARIsAOqMEZUUArfymu6jkj_o48o8vFx1XFtZK_2vGWKeW73AbSrKQl5Lz8bPWVMaAoo4EALw_wcB'
+                    },
+                    link2: {
+                        text: 'Effective Solutions for Food Waste',
+                        url: 'https://earth.org/solutions-for-food-waste/'
+                    }
+                },
                 instructions: 'Separate food waste from non-compostable packaging like plastic or paper to avoid contamination. Keep it distinct from recyclables or general waste to support composting or food waste collection systems. If possible, compost food scraps such as vegetable peels, fruit cores, and coffee grounds in a backyard compost bin or through a local program. Place food waste in a designated bin, using compostable bags if required by your local waste management service.'
             }
         },
@@ -123,6 +133,16 @@ export default {
             name: 'Glass',
             description: 'Glass bottles, jars, and containers, such as wine bottles, mason jars, and food containers',
             disposalGuide: {
+                references: {
+                    link1: {
+                        text: 'Best Glass Recycling Methods',
+                        url: 'https://onecommunityglobal.org/best-small-and-large-scale-glass-recycling-reuse-and-repurposing-options/?gad_source=1&gad_campaignid=1782450198&gbraid=0AAAAADsXl4Lx736Q_tebXq64tghcxKzUO&gclid=Cj0KCQjwoZbBBhDCARIsAOqMEZUDp7EtaPOosdgj7pdFysZIPGJcwgATnAT5qsBwv1GCT2C3K8jdY2AaAgCPEALw_wcB'
+                    },
+                    link2: {
+                        text: 'Safest Ways to Handle Glass Waste',
+                        url: 'https://www.linkedin.com/advice/3/what-safest-ways-manage-glass-waste-skills-environmental-services-ttlse'
+                    }
+                },
                 instructions: 'Rinse glass items thoroughly to remove food residue or liquids, ensuring they are recyclable. Remove metal or plastic caps and lids, as they are often recycled separately or discarded. If required by your local program, sort glass by color (clear, green, brown) to streamline processing. Place cleaned glass in a designated glass recycling bin or follow curbside pickup guidelines.'
             }
         },
@@ -130,13 +150,33 @@ export default {
             name: 'Metal',
             description: 'Metal items including cans, aluminum foil, and scrap metal like tin cans, aerosol cans, and foil trays',
             disposalGuide: {
-                instructions: 'Clean and rinse metal cans and containers to remove food residue or liquids, preventing contamination. Peel off paper or plastic labels when possible, as they may need separate recycling or disposal. Crush aluminum or tin cans to save space and ease collection. Place prepared metal items in a designated metal recycling bin or curbside recycling pickup.'
-            }
+                references: {
+                    link1: {
+                        text: 'How to Reduce Metal Waste',
+                        url: 'https://www.businesswaste.co.uk/reduce-waste/how-to-reduce-metal-waste/'
+                    },
+                },
+                link2: {
+                    text: 'Tips for Handling and Disposing of Metal Waste',
+                    url: 'https://www.morecambemetals.co.uk/best-practices-and-tips-for-handling-and-disposing-of-metal-waste/'
+                }
+            },
+            instructions: 'Clean and rinse metal cans and containers to remove food residue or liquids, preventing contamination. Peel off paper or plastic labels when possible, as they may need separate recycling or disposal. Crush aluminum or tin cans to save space and ease collection. Place prepared metal items in a designated metal recycling bin or curbside recycling pickup.'
         },
         paper: {
             name: 'Paper',
             description: 'Paper products including newspapers, cardboard, and office paper like cereal boxes, printer paper, and cardboard boxes',
             disposalGuide: {
+                references: {
+                    link1: {
+                        text: 'How to Reduce Paper Waste',
+                        url: 'https://www.businesswaste.co.uk/reduce-waste/how-to-reduce-paper-waste/'
+                    },
+                    link2: {
+                        text: 'Paper Waste Management',
+                        url: 'https://www.allcountyrecycling.com/blog/2018/paper-waste-management.html'
+                    }
+                },
                 instructions: 'Recycle clean, dry paper in paper recycling bins. Avoid recycling soiled or food-contaminated paper. Remove plastic windows from envelopes and flatten cardboard boxes to save space. If possible, use a paper shredder for sensitive documents before recycling. Place prepared paper items in a designated paper recycling bin or curbside recycling pickup.'
             }
         },
@@ -144,6 +184,20 @@ export default {
             name: 'Plastic',
             description: 'Plastic containers, bottles, and packaging materials like water bottles, food containers, and plastic bags',
             disposalGuide: {
+                references: {
+                    link1: {
+                        text: 'What You Can Do to Reduce Plastic Waste',
+                        url: 'https://www.epa.gov/plastics/what-you-can-do-reduce-plastic-waste'
+                    },
+                    link2: {
+                        text: 'How to Properly Recycle Plastic Waste',
+                        url: 'https://sensoneo.com/waste-library/how-to-properly-recycle-plastic/'
+                    },
+                    link3: {
+                        text: 'Plastic Waste Disposal Methods',
+                        url: 'https://www.wbwaste.com/blog/plastic-waste-disposal-methods/'
+                    }
+                },
                 instructions: 'Rinse containers and recycle in designated plastic bins. Remove caps and labels if required. Avoid recycling plastic bags in curbside bins; use designated drop-off locations. If possible, choose reusable alternatives to reduce plastic waste. Place cleaned plastic items in a designated plastic recycling bin or curbside recycling pickup.'
             }
         },
