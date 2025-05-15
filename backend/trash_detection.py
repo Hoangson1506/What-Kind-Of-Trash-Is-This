@@ -25,12 +25,8 @@ async def detect_with_model(image: Image.Image):
     detected_image = results.plot()
 
     # Encode image to base64
-    t1 = time.perf_counter()
-    rgb_image = detected_image[..., ::-1]
-    _, buffer = cv2.imencode('.jpg', rgb_image)
+    _, buffer = cv2.imencode('.jpg', detected_image)
     img_base64 = base64.b64encode(buffer).decode("utf-8")
-    t2 = time.perf_counter()
-    print(f"Image encoding took {t2 - t1:0.4f} seconds")
 
     # Prepare detection result
     detections = []

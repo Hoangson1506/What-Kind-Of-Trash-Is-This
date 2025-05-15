@@ -8,6 +8,7 @@ from models.userContributedData import UserContributedData
 from models.userResponses import UserResponses
 import os
 import json
+import traceback
 from enum import Enum
 from utils import update_env_variable
 from config import MODEL_DIR, IMG_DIR
@@ -51,97 +52,141 @@ async def change_model_path(model_name: str, model_format: str, admin: Annotated
 
 @router.put("/verify-data")
 async def verify_data(data_id: int, admin: Annotated[AdminAccounts, Depends(get_current_user)], db: AsyncSession = Depends(get_db)):
+    admin_login = admin.login_name
+
     try:
-        result = await db.execute(select(UserContributedData).where(UserContributedData.data_id == data_id, UserContributedData.is_verified.is_(None)))
-        data = result.first()
-        if data:
-            data = data[0]
-            data.is_verified = True
-            data.verified_by = admin.login_name
-            await db.commit()
-            return JSONResponse(
-                status_code=status.HTTP_200_OK,
-                content={"status": "success",
-                         "message": f"Data {data_id} verified by {admin.login_name}"}
-            )
-        else:
+        result = await db.execute(select(UserContributedData).where(
+            UserContributedData.data_id == data_id,
+            UserContributedData.is_verified.is_(None)
+        ))
+        data = result.scalars().first()
+
+        if not data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Data {data_id} not found or already verified"
             )
+
+        data.is_verified = True
+        data.verified_by = admin_login
+        await db.commit()
+
+        return {
+            "status": "success",
+            "message": f"Data {data_id} verified by {admin_login}"
+        }
+    except HTTPException as he:
+        await db.rollback()
+        raise he
     except Exception as e:
-        return {"error": str(e)}
+        await db.rollback()
+        print(f"Error in verify_data: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.put("/verify-response")
 async def verify_response(response_id: int, admin: Annotated[AdminAccounts, Depends(get_current_user)], db: AsyncSession = Depends(get_db)):
+    admin_login = admin.login_name
+
     try:
-        result = await db.execute(select(UserResponses).where(UserResponses.response_id == response_id, UserResponses.is_verified.is_(None)))
+        result = await db.execute(select(UserResponses).where(
+            UserResponses.response_id == response_id,
+            UserResponses.is_verified.is_(None)
+        ))
         data = result.scalars().first()
-        if data:
-            data.is_verified = True
-            data.verified_by = admin.login_name
-            await db.commit()
-            return JSONResponse(
-                status_code=status.HTTP_200_OK,
-                content={"status": "success",
-                         "message": f"Data {response_id} verified by {admin.login_name}"}
-            )
-        else:
+
+        if not data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Response {response_id} not found or already verified"
             )
+
+        data.is_verified = True
+        data.verified_by = admin_login
+        await db.commit()
+
+        return {
+            "status": "success",
+            "message": f"Response {response_id} verified by {admin_login}"
+        }
+    except HTTPException as he:
+        await db.rollback()
+        raise he
     except Exception as e:
-        return {"error": str(e)}
+        await db.rollback()
+        print(f"Error in verify_response: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.put("/disprove-data")
 async def disprove_data(data_id: int, admin: Annotated[AdminAccounts, Depends(get_current_user)], db: AsyncSession = Depends(get_db)):
+    admin_login = admin.login_name
+
     try:
-        result = await db.execute(select(UserContributedData).where(UserContributedData.data_id == data_id, UserContributedData.is_verified.is_(None)))
-        data = result.first()
-        if data:
-            data = data[0]
-            data.is_verified = False
-            data.verified_by = admin.login_name
-            await db.commit()
-            return JSONResponse(
-                status_code=status.HTTP_200_OK,
-                content={"status": "success",
-                         "message": f"Data {data_id} verified by {admin.login_name}"}
-            )
-        else:
+        result = await db.execute(select(UserContributedData).where(
+            UserContributedData.data_id == data_id,
+            UserContributedData.is_verified.is_(None)
+        ))
+        data = result.scalars().first()
+
+        if not data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Data {data_id} not found or already verified"
             )
+
+        data.is_verified = False
+        data.verified_by = admin_login
+        await db.commit()
+
+        return {
+            "status": "success",
+            "message": f"Data {data_id} disproved by {admin_login}"
+        }
+    except HTTPException as he:
+        await db.rollback()
+        raise he
     except Exception as e:
-        return {"error": str(e)}
+        await db.rollback()
+        print(f"Error in disprove_data: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/dispove-response")
+@router.put("/disprove-response")
 async def disprove_response(response_id: int, admin: Annotated[AdminAccounts, Depends(get_current_user)], db: AsyncSession = Depends(get_db)):
+    admin_login = admin.login_name
+
     try:
-        result = await db.execute(select(UserResponses).where(UserResponses.response_id == response_id, UserResponses.is_verified.is_(None)))
-        data = result.first()
-        if data:
-            data = data[0]
-            data.is_verified = False
-            data.verified_by = admin.login_name
-            await db.commit()
-            return JSONResponse(
-                status_code=status.HTTP_200_OK,
-                content={"status": "success",
-                         "message": f"Data {response_id} verified by {admin.login_name}"}
-            )
-        else:
+        result = await db.execute(select(UserResponses).where(
+            UserResponses.response_id == response_id,
+            UserResponses.is_verified.is_(None)
+        ))
+        data = result.scalars().first()
+
+        if not data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Response {response_id} not found or already verified"
             )
+
+        data.is_verified = False
+        data.verified_by = admin_login
+        await db.commit()
+        return {
+            "status": "success",
+            "message": f"Response {response_id} disproved by {admin_login}"
+        }
+    except HTTPException as he:
+        await db.rollback()
+        raise he
     except Exception as e:
-        return {"error": str(e)}
+        await db.rollback()
+        print(f"Error in disprove_response: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/admin/get-data/{status}")
