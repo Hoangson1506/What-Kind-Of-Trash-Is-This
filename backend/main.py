@@ -2,13 +2,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import desc, func, delete, update
 from models import adminAccounts, userContributedData, userResponses, webStatistics
-from database import Base, engine
+from db import Base, engine
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from routers import inference_routers, admin_routers, auth_routers, user_routers
 from trash_detection import init_model
-from database import Base, engine
 from config import MODEL_NAME, MODEL_DIR, MODEL_FORMAT
 import os
 
@@ -45,4 +44,8 @@ app.include_router(inference_routers.router,
 app.include_router(admin_routers.router, prefix='/admin', tags=['admin'])
 app.include_router(auth_routers.router, prefix='/auth', tags=['auth'])
 app.include_router(user_routers.router, prefix='/user', tags=['user'])
+
+images_dir = "images"
+if not os.path.exists(images_dir):
+    os.makedirs(images_dir)
 app.mount("/images", StaticFiles(directory="images"), name="static")

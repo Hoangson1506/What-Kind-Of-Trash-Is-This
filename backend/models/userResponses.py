@@ -1,6 +1,6 @@
 from sqlalchemy import Integer, Column, DateTime, Text, Boolean, ForeignKey, func
 from sqlalchemy.orm import relationship
-from database import Base
+from db import Base
 
 
 class UserResponses(Base):

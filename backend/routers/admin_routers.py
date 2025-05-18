@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from database import get_db
+from db import get_db
 from models.adminAccounts import AdminAccounts
 from models.userContributedData import UserContributedData
 from models.userResponses import UserResponses
