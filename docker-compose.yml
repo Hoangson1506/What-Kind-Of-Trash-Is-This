@@ -5,6 +5,7 @@ services:
       - 8000:8000
     volumes:
       - ./backend/database:/app/data
+      - ./backend/images:/app/images
     runtime: nvidia
     deploy:
       resources:

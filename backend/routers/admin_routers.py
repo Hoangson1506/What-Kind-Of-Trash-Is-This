@@ -44,6 +44,9 @@ async def change_model_path(model_name: str, model_format: str, admin: Annotated
         update_env_variable("MODEL_FORMAT", model_format)
 
         return {"status": "success", "message": f"Model changed successfully"}
+    
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

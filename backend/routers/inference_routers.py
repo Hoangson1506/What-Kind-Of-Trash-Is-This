@@ -56,6 +56,19 @@ async def inference_image(requests: ImageRequest, db: AsyncSession = Depends(get
 async def inference_video(websocket: WebSocket, db: AsyncSession = Depends(get_db)):
     await websocket.accept()
     try:
+        # update database for model statistics
+        model_statistics = await db.execute(select(WebStatistics).where(WebStatistics.model == MODEL_NAME))
+        row = model_statistics.first()
+        if row is None:
+            new_stats = WebStatistics(
+                model = MODEL_NAME,
+                live_inference_count = 1
+            )
+            db.add(new_stats)
+        else:
+            stats = row[0]
+            stats.live_inference_count += 1
+        await db.commit()
         while True:
             data = await websocket.receive_text()
             message = json.loads(data)
@@ -70,20 +83,6 @@ async def inference_video(websocket: WebSocket, db: AsyncSession = Depends(get_d
             image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
             results = await detect_with_model(image)
-
-            # update database for model statistics
-            model_statistics = await db.execute(select(WebStatistics).where(WebStatistics.model == MODEL_NAME))
-            row = model_statistics.first()
-            if row is None:
-                new_stats = WebStatistics(
-                    model = MODEL_NAME,
-                    live_inference_count = 1
-                )
-                db.add(new_stats)
-            else:
-                stats = row[0]
-                stats.live_inference_count += 1
-            await db.commit()
 
             await websocket.send_json(results)
 
