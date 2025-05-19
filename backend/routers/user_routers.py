@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import get_db
+from db import get_db
 from models.userContributedData import UserContributedData
 from models.userResponses import UserResponses
 from schemas import UserResponse, UserLabeledData
@@ -12,7 +12,6 @@ from config import MODEL_NAME
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
 
 @router.post("/save-user-response")
 async def save_user_user_response(request: UserResponse, db: AsyncSession = Depends(get_db)):

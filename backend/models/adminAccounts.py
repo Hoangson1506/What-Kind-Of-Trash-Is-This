@@ -1,6 +1,6 @@
 from sqlalchemy import Integer, Column, DateTime, Text, Boolean, func
 from sqlalchemy.orm import relationship
-from database import Base
+from db import Base
 
 
 class AdminAccounts(Base):

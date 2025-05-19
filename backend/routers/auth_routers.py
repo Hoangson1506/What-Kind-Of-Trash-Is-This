@@ -6,7 +6,7 @@ from auth import get_current_user, verify_password, create_access_token, get_has
 from config import ACCESS_TOKEN_EXPIRE_MINUTES
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from database import get_db
+from db import get_db
 from models.adminAccounts import AdminAccounts
 from schemas import AdminSignUp
 

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from models.webStatistics import WebStatistics
 import base64
 import io
@@ -6,12 +7,15 @@ import json
 from PIL import Image
 from schemas import ImageRequest
 from trash_detection import detect_with_model
+from db import get_db
+from sqlalchemy.future import select
+from config import MODEL_NAME
 
 router = APIRouter()
 
 
 @router.post('/image')
-async def inference_image(requests: ImageRequest):
+async def inference_image(requests: ImageRequest, db: AsyncSession = Depends(get_db)):
     """Get the uploaded image and preprocess to prepare for inference step
 
     Args:
@@ -28,6 +32,20 @@ async def inference_image(requests: ImageRequest):
         image = Image.open(io.BytesIO(image_bytes))
         results = await detect_with_model(image)
 
+        # update database for model statistics
+        model_statistics = await db.execute(select(WebStatistics).where(WebStatistics.model == MODEL_NAME))
+        row = model_statistics.first()
+        if row is None:
+            new_stats = WebStatistics(
+                model = MODEL_NAME,
+                image_inference_count = 1,
+            )
+            db.add(new_stats)
+        else:
+            stats = row[0]
+            stats.image_inference_count += 1
+        await db.commit()
+
         return results
     except Exception as e:
         print(str(e))
@@ -35,7 +53,7 @@ async def inference_image(requests: ImageRequest):
 
 
 @router.websocket("/ws")
-async def inference_video(websocket: WebSocket):
+async def inference_video(websocket: WebSocket, db: AsyncSession = Depends(get_db)):
     await websocket.accept()
     try:
         while True:
@@ -52,6 +70,21 @@ async def inference_video(websocket: WebSocket):
             image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
             results = await detect_with_model(image)
+
+            # update database for model statistics
+            model_statistics = await db.execute(select(WebStatistics).where(WebStatistics.model == MODEL_NAME))
+            row = model_statistics.first()
+            if row is None:
+                new_stats = WebStatistics(
+                    model = MODEL_NAME,
+                    live_inference_count = 1
+                )
+                db.add(new_stats)
+            else:
+                stats = row[0]
+                stats.live_inference_count += 1
+            await db.commit()
+
             await websocket.send_json(results)
 
     except WebSocketDisconnect:
