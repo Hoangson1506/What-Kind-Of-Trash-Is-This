@@ -5,6 +5,14 @@ services:
       - 8000:8000
     volumes:
       - ./backend/database:/app/data
+    # runtime: nvidia
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [ gpu ]
 
   frontend:
     build: ./frontend

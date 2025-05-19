@@ -72,3 +72,7 @@ urllib3==2.4.0
 uvicorn==0.34.2
 watchfiles==1.0.5
 websockets==15.0.1
+
+# onnx==1.18.0
+# onnxruntime-gpu==1.22.0
+# onnxslim==0.1.52
