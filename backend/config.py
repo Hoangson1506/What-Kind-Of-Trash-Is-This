@@ -17,8 +17,7 @@ class_map = {
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # đường dẫn đến backend/
 MODEL_DIR = os.path.join(BASE_DIR, "AI_models")
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "sqlite+aiosqlite:///./database/app.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/app.db")
 IMG_DIR = os.path.join(BASE_DIR, "images")
 SECRET_KEY = os.getenv("SECRET_KEY", "")
 ALGORITHM = "HS256"

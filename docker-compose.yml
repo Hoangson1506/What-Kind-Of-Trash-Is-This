@@ -4,7 +4,8 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - ./backend/database:/app/data
+      - ./backend/data:/app/data
+      - ./backend/images:/app/images
     # runtime: nvidia
     # deploy:
     #   resources:
@@ -12,7 +13,7 @@ services:
     #       devices:
     #         - driver: nvidia
     #           count: all
-    #           capabilities: [ gpu ]
+    #           capabilities: [gpu]
 
   frontend:
     build: ./frontend
