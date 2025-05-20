@@ -188,7 +188,7 @@ async def disprove_response(response_id: int, admin: Annotated[AdminAccounts, De
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/admin/get-data/{status}")
+@router.get("/get-data/{status}")
 async def get_data(admin: Annotated[AdminAccounts, Depends(get_current_user)], status: Status,  db: AsyncSession = Depends(get_db)):
     try:
         results = await db.execute(select(UserContributedData).where(UserContributedData.is_verified.is_(status_map[status])))
@@ -207,7 +207,7 @@ async def get_data(admin: Annotated[AdminAccounts, Depends(get_current_user)], s
         return {"error": str(e)}
 
 
-@router.get("/admin/get-response/{status}")
+@router.get("/get-response/{status}")
 async def get_response(admin: Annotated[AdminAccounts, Depends(get_current_user)], status: Status,  db: AsyncSession = Depends(get_db)):
     try:
         results = await db.execute(select(UserResponses).where(UserResponses.is_verified.is_(status_map[status])))
