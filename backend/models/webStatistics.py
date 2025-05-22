@@ -9,3 +9,6 @@ class WebStatistics(Base):
     model = Column(Text, primary_key=True)
     image_inference_count = Column(Integer, default=0)
     live_inference_count = Column(Integer, default=0)
+
+    responses = relationship(
+        'UserResponses', back_populates='model', lazy='selectin')

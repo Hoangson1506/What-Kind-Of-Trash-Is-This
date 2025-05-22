@@ -9,6 +9,7 @@ from auth import get_hashed_password
 from models.adminAccounts import AdminAccounts
 from models.userContributedData import UserContributedData
 from models.userResponses import UserResponses
+from models.webStatistics import WebStatistics
 from schemas import LabelData
 from main import app
 
@@ -19,6 +20,7 @@ app.dependency_overrides[get_db] = override_get_db
 # the database will be created and stores data in RAM, and won't be deleted until testing is complete
 # Therefore, any data added during testing will remain in the database
 # and we have to test cases where there should be 0 data first
+
 # no data case
 @pytest.mark.asyncio
 async def test_get_data_4():
@@ -236,7 +238,7 @@ async def test_verify_data_2():
 # data already verified case
 @pytest.mark.asyncio
 async def test_verify_data_3():
-    # Create fake unverified data and fake admin
+    # Create fake verified data and fake admin
     async for db in override_get_db():
         labels = [
             LabelData(trashType="plastic", bbox=(10.0, 20.0, 50.0, 60.0))
@@ -598,7 +600,7 @@ async def test_disprove_data_2():
 # data already verified case
 @pytest.mark.asyncio
 async def test_disprove_data_3():
-    # Create fake unverified data and fake admin
+    # Create fake verified data and fake admin
     async for db in override_get_db():
         labels = [
             LabelData(trashType="plastic", bbox=(10.0, 20.0, 50.0, 60.0))
@@ -1145,3 +1147,143 @@ async def test_delete_disproved_response_1(monkeypatch):
     db_result = await db.execute(select(UserResponses).where(UserResponses.is_verified == False))
     disproved_response = db_result.scalars().all()
     assert len(disproved_response) == 0
+
+# Default get model stats case
+@pytest.mark.asyncio
+async def test_get_model_statistics_1():
+ # Create fake verified responses, fake statistics and fake admin
+    async for db in override_get_db():
+        user_response_1 = UserResponses(
+            response_id=13,
+            image_path = "HoangSon.jpg",
+            model_used="minhtuusea",
+            is_right=True,
+            comment="qua chuan chi",
+            is_verified=True
+        )
+        db.add(user_response_1)
+        user_response_2 = UserResponses(
+            response_id=14,
+            image_path = "HoangSon.jpg",
+            model_used="minhtuusea",
+            is_right=True,
+            comment="qua chuan chi",
+            is_verified=True
+        )
+        db.add(user_response_2)
+        user_response_3 = UserResponses(
+            response_id=15,
+            image_path = "HoangSon.jpg",
+            model_used="minhtuusea",
+            is_right=False,
+            comment="qua chuan chi",
+            is_verified=True
+        )
+        db.add(user_response_3)
+        admin = AdminAccounts(
+        login_name="minhtuuseah", 
+        hashed_password=get_hashed_password("minhtuuseah")
+        )
+        db.add(admin)
+        model_stats = WebStatistics(
+            model='minhtuusea',
+            image_inference_count=5,
+            live_inference_count=2
+        )
+        db.add(model_stats)
+        await db.commit()
+
+    # Login to get token
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
+        res = await ac.post("/auth/admin/login", data={
+            "username": "minhtuuseah",
+            "password": "minhtuuseah"
+        }, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        token = res.json()["access_token"]
+
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await ac.get(
+            "/admin/get-model-statistics",
+            headers=headers,
+            params={"model_name": "minhtuusea"}
+        )
+    # Assert
+    assert response.status_code == 200
+    result = response.json()
+    assert result['image_inference_count'] == 5
+    assert result['live_inference_count'] == 2
+    assert result['number_of_responses'] == 3
+    assert result['accuracy'] == 2/3
+
+# model has no verified response case
+@pytest.mark.asyncio
+async def test_get_model_statistics_2():
+ # Create fake statistics and fake admin
+    async for db in override_get_db():
+        admin = AdminAccounts(
+        login_name="minhtuuseai", 
+        hashed_password=get_hashed_password("minhtuuseai")
+        )
+        db.add(admin)
+        model_stats = WebStatistics(
+            model='minhtuuseb',
+            image_inference_count=5,
+            live_inference_count=2
+        )
+        db.add(model_stats)
+        await db.commit()
+
+    # Login to get token
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
+        res = await ac.post("/auth/admin/login", data={
+            "username": "minhtuuseai",
+            "password": "minhtuuseai"
+        }, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        token = res.json()["access_token"]
+
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await ac.get(
+            "/admin/get-model-statistics",
+            headers=headers,
+            params={"model_name": "minhtuuseb"}
+        )
+    # Assert
+    assert response.status_code == 200
+    result = response.json()
+    assert result['image_inference_count'] == 5
+    assert result['live_inference_count'] == 2
+    assert result['number_of_responses'] == 0
+    assert result['accuracy'] is None
+
+# no such model name found in database case
+@pytest.mark.asyncio
+async def test_get_model_statistics_3():
+ # Create fake admin
+    async for db in override_get_db():
+        admin = AdminAccounts(
+        login_name="minhtuuseaj", 
+        hashed_password=get_hashed_password("minhtuuseaj")
+        )
+        db.add(admin)
+        await db.commit()
+
+    # Login to get token
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
+        res = await ac.post("/auth/admin/login", data={
+            "username": "minhtuuseaj",
+            "password": "minhtuuseaj"
+        }, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        token = res.json()["access_token"]
+
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await ac.get(
+            "/admin/get-model-statistics",
+            headers=headers,
+            params={"model_name": "notminhtuuse"}
+        )
+    # Assert
+    assert response.status_code == 404
+    assert response.json()['detail'] == "No statistics found for model: notminhtuuse"

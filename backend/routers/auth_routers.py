@@ -63,4 +63,4 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: 
 @router.get("/users/me")
 async def read_users_me(current_user: AdminAccounts = Depends(get_current_user)):
     print(f"Got username: {current_user.login_name}")
-    return {"username": current_user.login_name}
+    return {"username": current_user.login_name, "id": current_user.admin_id}
