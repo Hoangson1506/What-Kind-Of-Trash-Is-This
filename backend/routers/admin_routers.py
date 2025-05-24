@@ -5,12 +5,13 @@ from db import get_db
 from models.adminAccounts import AdminAccounts
 from models.userContributedData import UserContributedData
 from models.userResponses import UserResponses
+from models.webStatistics import WebStatistics
 import os
 import json
 import traceback
 from enum import Enum
 from utils import update_env_variable
-from config import MODEL_DIR, IMG_DIR
+from config import MODEL_DIR, IMG_DIR, MODEL_NAME
 from typing import Annotated
 from auth import get_current_user
 
@@ -255,5 +256,35 @@ async def delete_disproved_response(admin: Annotated[AdminAccounts, Depends(get_
             await db.delete(data)
         await db.commit()
         return {"status": "success", "message": "All disproved responses deleted"}
+    except Exception as e:
+        return {"error": str(e)}
+    
+@router.get("/get-model-statistics")
+async def get_model_statistics(admin: Annotated[AdminAccounts, Depends(get_current_user)], db: AsyncSession = Depends(get_db), model_name: str=MODEL_NAME):
+    try:
+        stats_results = await db.execute(select(WebStatistics).where(WebStatistics.model == model_name))
+        data = stats_results.scalars().first()
+        if data is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No statistics found for model: {model_name}"
+            )
+        image_inference_count = data.image_inference_count
+        live_inference_count = data.live_inference_count
+        response_results = await db.execute(select(UserResponses.is_right).where(UserResponses.model_used == model_name, UserResponses.is_verified == True))
+        response_data = response_results.scalars().all()
+        response_num = len(response_data)
+        accuracy = None
+        if response_num:
+            accuracy = sum(response_data) / response_num
+        calculated_statistics = {
+            "image_inference_count": image_inference_count,
+            "live_inference_count": live_inference_count,
+            "number_of_responses": response_num,
+            "accuracy": accuracy
+        }
+        return calculated_statistics
+    except HTTPException as he:
+        raise
     except Exception as e:
         return {"error": str(e)}
