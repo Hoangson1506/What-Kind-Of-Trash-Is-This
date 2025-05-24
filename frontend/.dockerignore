@@ -1,0 +1,30 @@
+# Build file
+node_modules/
+dist/
+build/
+
+# Version control file
+.git/
+.gitignore
+
+# Temp and log file
+*.log
+npm-debug.log
+yarn-error.log
+
+# env file
+.env
+.env.local
+.env.development
+.env.production
+
+# IDE or editor file 
+.vscode/
+.idea/
+*.swp
+
+# Others
+Dockerfile
+.dockerignore
+README.md
+LICENSE
