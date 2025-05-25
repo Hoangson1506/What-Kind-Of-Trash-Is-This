@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { debounce } from "lodash";
 import type { User, Model, UserContributedData as ImageData, UserResponseData as Feedback, AuthData, ModelStatistics, VerificationStatus } from "@/types";
 import axios, { AxiosError } from "axios";
 
@@ -23,12 +24,13 @@ interface AppContextType {
   unverifiedSamplesCount: number;
   pendingFeedbacksCount: number;
   approvedFeedbacksCount: number;
-  changeModel: (modelName: string, modelFormat: string, newPath: string) => void;
+  changeModel: (modelName: string, modelFormat: string, newPath: string) => Promise<void>;
   getDataByStatus: (status: VerificationStatus) => Promise<void>;
   getResponseByStatus: (status: VerificationStatus) => Promise<void>;
   deleteDisapprovedImage: (data_id: number) => void;
   modelStatistics: Record<string, ModelStatistics>;
   getModelStatistics: (modelName?: string) => Promise<void>;
+  debouncedGetModelStatistics: (modelName?: string) => void;
   modelNames: string[];
   error: string | null;
   setError: (error: string | null) => void;
@@ -43,7 +45,7 @@ const FIXED_MODEL_LIST: Omit<Model, keyof ModelStatistics>[] = [
   { model_name: "yolo_v8s_version_1", model_format: "pt", path: "/models/yolo_v8s_version_1.pt" },
   { model_name: "yolo_v8s_version_2", model_format: "onnx", path: "/models/yolo_v8s_version_2.onnx" },
   { model_name: "yolo_v8s_version_2", model_format: "pt", path: "/models/yolo_v8s_version_2.pt" },
-  { model_name: "yolo_v8n_version_1", model_format: "onnx", path: "/models/yolo_v8n_version_1.onxx" },
+  { model_name: "yolo_v8n_version_1", model_format: "onnx", path: "/models/yolo_v8n_version_1.onnx" }, // Sửa typo "onxx" thành "onnx"
   { model_name: "best", model_format: "pt", path: "/models/best.pt" },
 ];
 
@@ -73,7 +75,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [modelStatistics, setModelStatistics] = useState<Record<string, ModelStatistics>>({});
   const [error, setError] = useState<string | null>(null);
 
-  // Khởi tạo currentModel từ localStorage trước
+  // Khởi tạo currentModel từ localStorage
   useEffect(() => {
     const storedCurrentModel = localStorage.getItem(STORAGE_KEYS.CURRENT_MODEL);
     if (storedCurrentModel) {
@@ -90,42 +92,41 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Khởi tạo dữ liệu từ localStorage
-  // Trong useEffect khởi tạo dữ liệu từ localStorage
-useEffect(() => {
-  const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
-  if (storedUser) {
-    try {
-      setUser(JSON.parse(storedUser));
-    } catch (err) {
-      console.error("Không thể phân tích dữ liệu người dùng từ localStorage:", err);
-      localStorage.removeItem(STORAGE_KEYS.USER);
+  useEffect(() => {
+    const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error("Không thể phân tích dữ liệu người dùng từ localStorage:", err);
+        localStorage.removeItem(STORAGE_KEYS.USER);
+      }
     }
-  }
 
-  const storedImageData = localStorage.getItem(STORAGE_KEYS.IMAGE_DATA);
-  if (storedImageData) {
-    try {
-      const parsedData = JSON.parse(storedImageData);
-      const transformedData = parsedData.map((item: any) => ({
-        data_id: item.data_id || 0,
-        image_path: item.image_path || item.image || "",
-        labels: Array.isArray(item.labels)
-          ? item.labels.map((label: any) => ({
+    const storedImageData = localStorage.getItem(STORAGE_KEYS.IMAGE_DATA);
+    if (storedImageData) {
+      try {
+        const parsedData = JSON.parse(storedImageData);
+        const transformedData = parsedData.map((item: any) => ({
+          data_id: item.data_id || 0,
+          image_path: item.image_path || item.image || "",
+          labels: Array.isArray(item.labels)
+            ? item.labels.map((label: any) => ({
               trashType: label.trashType || "Unknown",
               bbox: Array.isArray(label.bbox) ? label.bbox.map(Number) : [],
             }))
-          : null, 
-        status: ["unverified", "verified", "disproved"].includes(item.status)
-          ? item.status
-          : "unverified",
-        model_used: item.model_used || "",
-        added_at: item.added_at || new Date().toISOString(),
-      }));
-      setImageData(transformedData);
-    } catch (err) {
-      console.error("Không thể phân tích dữ liệu hình ảnh từ localStorage:", err);
+            : [],
+          status: ["unverified", "verified", "disproved"].includes(item.status)
+            ? item.status
+            : "unverified",
+          model_used: item.model_used || "",
+          added_at: item.added_at || new Date().toISOString(),
+        }));
+        setImageData(transformedData);
+      } catch (err) {
+        console.error("Không thể phân tích dữ liệu hình ảnh từ localStorage:", err);
+      }
     }
-  }
 
     const storedFeedbacks = localStorage.getItem(STORAGE_KEYS.FEEDBACKS);
     if (storedFeedbacks) {
@@ -271,11 +272,11 @@ useEffect(() => {
           data_id: Number(item.data_id) || 0,
           image_path: item.image_path || item.image || "",
           labels: Array.isArray(item.labels)
-          ? item.labels.map((label: any) => ({
+            ? item.labels.map((label: any) => ({
               trashType: label.trashType || "Unknown",
               bbox: Array.isArray(label.bbox) ? label.bbox.map(Number) : [],
             }))
-          : null,
+            : [],
           status: ["unverified", "verified", "disproved"].includes(item.status)
             ? item.status
             : "unverified",
@@ -368,9 +369,7 @@ useEffect(() => {
           model.model_name === updatedModel.model_name ? updatedModel : model
         )
       );
-      if (currentModel?.model_name === nameToFetch) {
-        setCurrentModel(updatedModel);
-      }
+
       setError(null);
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 404) {
@@ -381,6 +380,14 @@ useEffect(() => {
       }
     }
   }, [currentModel, models]);
+
+  // Phiên bản debounced của getModelStatistics
+  const debouncedGetModelStatistics = useCallback(
+    debounce((modelName?: string) => {
+      getModelStatistics(modelName);
+    }, 2000),
+    [getModelStatistics]
+  );
 
   // Lấy dữ liệu phản hồi theo trạng thái
   const getResponseByStatus = useCallback(async (status: VerificationStatus) => {
@@ -454,10 +461,16 @@ useEffect(() => {
           (model) => model.model_name === model_name && model.model_format === model_format
         );
         if (selectedModel) {
-          const updatedModel = { ...selectedModel, path };
+          const stats = modelStatistics[model_name] || {
+            image_inference_count: 0,
+            live_inference_count: 0,
+            number_of_responses: 0,
+            accuracy: null,
+          };
+          const updatedModel = { ...selectedModel, path, ...stats };
           setCurrentModel(updatedModel);
           localStorage.setItem(STORAGE_KEYS.CURRENT_MODEL, JSON.stringify(updatedModel));
-          await getModelStatistics(model_name);
+          debouncedGetModelStatistics(model_name);
           await getResponseByStatus("unverified");
           await getResponseByStatus("verified");
         } else {
@@ -482,7 +495,7 @@ useEffect(() => {
         }
       }
     },
-    [models, getModelStatistics, getResponseByStatus]
+    [models, modelStatistics, debouncedGetModelStatistics, getResponseByStatus]
   );
 
   const login = useCallback((userData: User, authData: AuthData) => {
@@ -504,13 +517,13 @@ useEffect(() => {
     setCurrentModel(model);
     localStorage.setItem(STORAGE_KEYS.CURRENT_MODEL, JSON.stringify(model));
     try {
-      await getModelStatistics(model.model_name);
+      debouncedGetModelStatistics(model.model_name);
       await getResponseByStatus("unverified");
       await getResponseByStatus("verified");
     } catch (err) {
       console.error("Lỗi khi lấy thống kê mô hình hoặc phản hồi:", err);
     }
-  }, [getModelStatistics, getResponseByStatus]);
+  }, [debouncedGetModelStatistics, getResponseByStatus]);
 
   const approveImage = useCallback(async (data_id: number) => {
     const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
@@ -541,170 +554,164 @@ useEffect(() => {
   }, []);
 
   const rejectImage = useCallback(async (data_id: number) => {
-  const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
-  if (!token) {
-    setError("Không tìm thấy token xác thực");
-    return;
-  }
-
-  try {
-    await axios.put(
-      `http://localhost:8000/admin/disprove-data?data_id=${data_id}`, // Change to query parameter
-      {}, // Empty body if not needed
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    setImageData((prevData) =>
-      prevData.map((img) =>
-        img.data_id === data_id ? { ...img, status: "disproved" as const } : img
-      )
-    );
-  } catch (err) {
-    setError("Không thể từ chối hình ảnh: " + (err as Error).message);
-  }
-}, []);
-
-  const approveFeedback = useCallback(async (response_id: number) => {
-  const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
-  if (!token) {
-    setError("Không tìm thấy token xác thực");
-    return;
-  }
-
-  // Kiểm tra xem response_id có hợp lệ không
-  const feedbackToApprove = feedbacks.find((f) => f.response_id === response_id);
-  if (!feedbackToApprove) {
-    setError("Không tìm thấy phản hồi để phê duyệt");
-    return;
-  }
-
-  try {
-    await axios.put(
-      `http://localhost:8000/admin/verify-response?response_id=${response_id}`, // Sử dụng query parameter
-      {}, // Body rỗng vì dữ liệu đã được truyền qua query
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    // Cập nhật state
-    const updatedFeedback = { ...feedbackToApprove, status: "verified" as const };
-    const newFeedbacks = feedbacks.filter((feedback) => feedback.response_id !== response_id);
-    const newVerifiedFeedbacks = [...verifiedFeedbacks, updatedFeedback];
-
-    // Cập nhật state và localStorage
-    setFeedbacks(newFeedbacks);
-    setVerifiedFeedbacks(newVerifiedFeedbacks);
-    localStorage.setItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(newFeedbacks));
-    localStorage.setItem(STORAGE_KEYS.VERIFIED_FEEDBACKS, JSON.stringify(newVerifiedFeedbacks));
-  } catch (err) {
-    if (axios.isAxiosError(err)) {
-      console.error("Axios error:", {
-        status: err.response?.status,
-        data: err.response?.data,
-        message: err.message,
-      });
-      setError(`Không thể phê duyệt phản hồi: ${err.response?.data?.detail || err.message}`);
-    } else {
-      setError("Không thể phê duyệt phản hồi: " + (err as Error).message);
-    }
-  }
-}, [feedbacks, verifiedFeedbacks]);
-
-const rejectFeedback = useCallback(async (response_id: number) => {
-  const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
-  if (!token) {
-    setError("Không tìm thấy token xác thực");
-    return;
-  }
-
-  // Kiểm tra xem response_id có hợp lệ không
-  const feedbackToReject = feedbacks.find((f) => f.response_id === response_id);
-  if (!feedbackToReject) {
-    setError("Không tìm thấy phản hồi để từ chối");
-    return;
-  }
-
-  try {
-    await axios.put(
-      `http://localhost:8000/admin/disprove-response?response_id=${response_id}`, // Sử dụng query parameter
-      {}, // Body rỗng vì dữ liệu đã được truyền qua query
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    // Cập nhật state
-    const newFeedbacks = feedbacks.map((feedback) =>
-      feedback.response_id === response_id ? { ...feedback, status: "disproved" as const } : feedback
-    );
-
-    // Cập nhật state và localStorage
-    setFeedbacks(newFeedbacks);
-    localStorage.setItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(newFeedbacks));
-  } catch (err) {
-    if (axios.isAxiosError(err)) {
-      console.error("Axios error:", {
-        status: err.response?.status,
-        data: err.response?.data,
-        message: err.message,
-      });
-      setError(`Không thể từ chối phản hồi: ${err.response?.data?.detail || err.message}`);
-    } else {
-      setError("Không thể từ chối phản hồi: " + (err as Error).message);
-    }
-  }
-}, [feedbacks]);
-
-  const getDataByStatus = useCallback(async (status: VerificationStatus) => {
-  const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
-  if (!token) {
-    setError("Không tìm thấy token xác thực");
-    return;
-  }
-
-  try {
-    const response = await axios.get(`http://localhost:8000/admin/get-data/${status}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!Array.isArray(response.data)) {
-      setError("Dữ liệu trả về không đúng định dạng");
+    const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
+    if (!token) {
+      setError("Không tìm thấy token xác thực");
       return;
     }
 
-    const transformedData: ImageData[] = response.data.map((item: any) => ({
-      data_id: Number(item.data_id) || 0,
-      image_path: item.image_path || item.image || "",
-      labels: Array.isArray(item.labels)
+    try {
+      await axios.put(
+        `http://localhost:8000/admin/disprove-data?data_id=${data_id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setImageData((prevData) =>
+        prevData.map((img) =>
+          img.data_id === data_id ? { ...img, status: "disproved" as const } : img
+        )
+      );
+    } catch (err) {
+      setError("Không thể từ chối hình ảnh: " + (err as Error).message);
+    }
+  }, []);
+
+  const approveFeedback = useCallback(async (response_id: number) => {
+    const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
+    if (!token) {
+      setError("Không tìm thấy token xác thực");
+      return;
+    }
+
+    const feedbackToApprove = feedbacks.find((f) => f.response_id === response_id);
+    if (!feedbackToApprove) {
+      setError("Không tìm thấy phản hồi để phê duyệt");
+      return;
+    }
+
+    try {
+      await axios.put(
+        `http://localhost:8000/admin/verify-response?response_id=${response_id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const updatedFeedback = { ...feedbackToApprove, status: "verified" as const };
+      const newFeedbacks = feedbacks.filter((feedback) => feedback.response_id !== response_id);
+      const newVerifiedFeedbacks = [...verifiedFeedbacks, updatedFeedback];
+
+      setFeedbacks(newFeedbacks);
+      setVerifiedFeedbacks(newVerifiedFeedbacks);
+      localStorage.setItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(newFeedbacks));
+      localStorage.setItem(STORAGE_KEYS.VERIFIED_FEEDBACKS, JSON.stringify(newVerifiedFeedbacks));
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.error("Axios error:", {
+          status: err.response?.status,
+          data: err.response?.data,
+          message: err.message,
+        });
+        setError(`Không thể phê duyệt phản hồi: ${err.response?.data?.detail || err.message}`);
+      } else {
+        setError("Không thể phê duyệt phản hồi: " + (err as Error).message);
+      }
+    }
+  }, [feedbacks, verifiedFeedbacks]);
+
+  const rejectFeedback = useCallback(async (response_id: number) => {
+    const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
+    if (!token) {
+      setError("Không tìm thấy token xác thực");
+      return;
+    }
+
+    const feedbackToReject = feedbacks.find((f) => f.response_id === response_id);
+    if (!feedbackToReject) {
+      setError("Không tìm thấy phản hồi để từ chối");
+      return;
+    }
+
+    try {
+      await axios.put(
+        `http://localhost:8000/admin/disprove-response?response_id=${response_id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const newFeedbacks = feedbacks.map((feedback) =>
+        feedback.response_id === response_id ? { ...feedback, status: "disproved" as const } : feedback
+      );
+
+      setFeedbacks(newFeedbacks);
+      localStorage.setItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(newFeedbacks));
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.error("Axios error:", {
+          status: err.response?.status,
+          data: err.response?.data,
+          message: err.message,
+        });
+        setError(`Không thể từ chối phản hồi: ${err.response?.data?.detail || err.message}`);
+      } else {
+        setError("Không thể từ chối phản hồi: " + (err as Error).message);
+      }
+    }
+  }, [feedbacks]);
+
+  const getDataByStatus = useCallback(async (status: VerificationStatus) => {
+    const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
+    if (!token) {
+      setError("Không tìm thấy token xác thực");
+      return;
+    }
+
+    try {
+      const response = await axios.get(`http://localhost:8000/admin/get-data/${status}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!Array.isArray(response.data)) {
+        setError("Dữ liệu trả về không đúng định dạng");
+        return;
+      }
+
+      const transformedData: ImageData[] = response.data.map((item: any) => ({
+        data_id: Number(item.data_id) || 0,
+        image_path: item.image_path || item.image || "",
+        labels: Array.isArray(item.labels)
           ? item.labels.map((label: any) => ({
-              trashType: label.trashType || "Unknown",
-              bbox: Array.isArray(label.bbox) ? label.bbox.map(Number) : [],
-            }))
-          : null,
-      status: ["unverified", "verified", "disproved"].includes(item.status)
-        ? (item.status as VerificationStatus)
-        : "unverified",
-      model_used: item.model_used || "",
-      added_at: item.added_at || new Date().toISOString(),
-    }));
-    setImageData(transformedData);
-    localStorage.setItem(STORAGE_KEYS.IMAGE_DATA, JSON.stringify(transformedData));
-    setError(null);
-  } catch (err) {
-    setError("Không thể lấy dữ liệu theo trạng thái: " + (err as Error).message);
-  }
-}, []);
+            trashType: label.trashType || "Unknown",
+            bbox: Array.isArray(label.bbox) ? label.bbox.map(Number) : [],
+          }))
+          : [],
+        status: ["unverified", "verified", "disproved"].includes(item.status)
+          ? (item.status as VerificationStatus)
+          : "unverified",
+        model_used: item.model_used || "",
+        added_at: item.added_at || new Date().toISOString(),
+      }));
+      setImageData(transformedData);
+      localStorage.setItem(STORAGE_KEYS.IMAGE_DATA, JSON.stringify(transformedData));
+      setError(null);
+    } catch (err) {
+      setError("Không thể lấy dữ liệu theo trạng thái: " + (err as Error).message);
+    }
+  }, []);
 
   const deleteDisapprovedImage = useCallback(async (data_id: number) => {
     const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
@@ -731,41 +738,27 @@ const rejectFeedback = useCallback(async (response_id: number) => {
     }
   }, []);
 
-
-
   // Tính danh sách model_name duy nhất
   const modelNames = [...new Set(models.map((model) => model.model_name))];
 
   // Lấy thống kê mô hình khi user hoặc currentModel thay đổi
- useEffect(() => {
-  let isMounted = true;
-  let timeoutId: NodeJS.Timeout | null = null;
+  useEffect(() => {
+    let isMounted = true;
 
-  // Hàm gọi getModelStatistics với điều kiện
-  const fetchStatistics = () => {
-    if (isMounted && user && currentModel && currentModel.model_name) {
-      getModelStatistics(currentModel.model_name);
-    }
-  };
+    const fetchStatistics = () => {
+      if (isMounted && user && currentModel && currentModel.model_name) {
+        if (!modelStatistics[currentModel.model_name]) {
+          debouncedGetModelStatistics(currentModel.model_name);
+        }
+      }
+    };
 
-  // Kiểm tra và trì hoãn gọi API
-  if (user && currentModel && currentModel.model_name) {
-    // Xóa timeout cũ nếu có
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    // Thiết lập timeout mới
-    timeoutId = setTimeout(fetchStatistics, 500); // Độ trễ 500ms
-  }
+    fetchStatistics();
 
-  // Cleanup
-  return () => {
-    isMounted = false;
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-  };
-}, [user, currentModel, getModelStatistics]);
+    return () => {
+      isMounted = false;
+    };
+  }, [user, currentModel, modelStatistics, debouncedGetModelStatistics]);
 
   // Lưu dữ liệu vào localStorage khi state thay đổi
   useEffect(() => {
@@ -783,7 +776,7 @@ const rejectFeedback = useCallback(async (response_id: number) => {
     }
   }, [currentModel, imageData, feedbacks, verifiedFeedbacks]);
 
-  // Log approvedFeedbacksCount mỗi khi nó thay đổi
+  // Tính toán các số liệu thống kê
   const unverifiedSamplesCount = imageData.filter((img) => img.status === "unverified").length;
   const pendingFeedbacksCount = currentModel
     ? feedbacks.filter((f) => f.model_used === currentModel.model_name && f.status === "unverified").length
@@ -824,6 +817,7 @@ const rejectFeedback = useCallback(async (response_id: number) => {
         deleteDisapprovedImage,
         modelStatistics,
         getModelStatistics,
+        debouncedGetModelStatistics,
         modelNames,
         error,
         setError,
