@@ -21,3 +21,10 @@ services:
       - 5173:80
     depends_on:
       - backend
+
+  waste-admin-dashboard:
+    build: ./waste-admin-dashboard
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend
