@@ -40,9 +40,8 @@ const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel 
         };
 
         image.onload = () => {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
+            canvas.width = image.naturalWidth;
+            canvas.height = image.naturalHeight;
             ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
             drawLabels();
         };
@@ -103,12 +102,15 @@ const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel 
         if (!canvas) return;
 
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
 
         setIsDrawing(true);
         setStartPos({ x, y });
-        setCurrentLabel({ trashType: selectedType, bbox: [x, y, 0, 0] }); // Initialize with zero width/height
+        setCurrentLabel({ trashType: selectedType, bbox: [x, y, 0, 0] });
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -116,8 +118,11 @@ const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel 
 
         const canvas = canvasRef.current;
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
 
         const width = x - startPos.x;
         const height = y - startPos.y;
@@ -208,8 +213,8 @@ const ImageLabeler: React.FC<ImageLabelerProps> = ({ imageUrl, onSave, onCancel 
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
                     onMouseLeave={() => setIsDrawing(false)}
-                    className="border rounded-lg cursor-crosshair w-full"
-                    style={{ maxWidth: '100%', height: 'auto' }}
+                    style={{ width: '100%', height: 'auto' }}
+                    className="border rounded-lg cursor-crosshair"
                 />
             </div>
 
