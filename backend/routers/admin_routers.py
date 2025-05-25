@@ -45,7 +45,7 @@ async def change_model_path(model_name: str, model_format: str, admin: Annotated
         update_env_variable("MODEL_FORMAT", model_format)
 
         return {"status": "success", "message": f"Model changed successfully"}
-    
+
     except HTTPException:
         raise
 
@@ -258,9 +258,10 @@ async def delete_disproved_response(admin: Annotated[AdminAccounts, Depends(get_
         return {"status": "success", "message": "All disproved responses deleted"}
     except Exception as e:
         return {"error": str(e)}
-    
+
+
 @router.get("/get-model-statistics")
-async def get_model_statistics(admin: Annotated[AdminAccounts, Depends(get_current_user)], db: AsyncSession = Depends(get_db), model_name: str=MODEL_NAME):
+async def get_model_statistics(admin: Annotated[AdminAccounts, Depends(get_current_user)], db: AsyncSession = Depends(get_db), model_name: str = MODEL_NAME):
     try:
         stats_results = await db.execute(select(WebStatistics).where(WebStatistics.model == model_name))
         data = stats_results.scalars().first()
@@ -271,7 +272,7 @@ async def get_model_statistics(admin: Annotated[AdminAccounts, Depends(get_curre
             )
         image_inference_count = data.image_inference_count
         live_inference_count = data.live_inference_count
-        response_results = await db.execute(select(UserResponses.is_right).where(UserResponses.model_used == model_name, UserResponses.is_verified == True))
+        response_results = await db.execute(select(UserResponses.is_right).where(UserResponses.model_used == model_name))
         response_data = response_results.scalars().all()
         response_num = len(response_data)
         accuracy = None

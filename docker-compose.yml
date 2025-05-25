@@ -1,6 +1,7 @@
 services:
   backend:
     build: ./backend
+    image: hoangson/trash-detection-backend:1.0
     ports:
       - 8000:8000
     volumes:
@@ -17,12 +18,14 @@ services:
 
   frontend:
     build: ./frontend
+    image: hoangson/trash-detection-frontend:1.0
     ports:
       - 5173:80
     depends_on:
       - backend
   admin:
     build: ./admin
+    image: hoangson/trash-detection-admin:1.0
     ports:
       - 3000:3000
     depends_on:
