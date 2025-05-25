@@ -5,10 +5,11 @@ import { useAppContext } from "@/context/app-context";
 import ApprovedFeedbackCard from "@/components/approved-feedback-card";
 import Pagination from "@/components/pagination";
 import PageTitle from "@/components/page-title";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function UserFeedbacks() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     user,
     verifiedFeedbacks,
@@ -16,21 +17,25 @@ export default function UserFeedbacks() {
     getResponseByStatus,
     error: contextError,
   } = useAppContext();
-  const [currentPage, setCurrentPage] = useState(1);
+
+  // Khởi tạo currentPage từ URL query hoặc mặc định trang 1
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    return isNaN(page) ? 1 : page;
+  });
   const [localError, setLocalError] = useState<string | null>(null);
   const itemsPerPage = 12;
 
-  // Redirect to homepage if user is not logged in
+  // Chuyển hướng nếu chưa đăng nhập
   useEffect(() => {
     if (!user) {
       router.push("/");
     }
   }, [user, router]);
 
-  // Fetch verified feedbacks when model or user changes
+  // Lấy phản hồi đã phê duyệt khi model hoặc user thay đổi
   useEffect(() => {
     if (currentModel && user) {
-      setCurrentPage(1); // Reset to page 1 on model change
       getResponseByStatus("verified")
         .then(() => console.log("Fetched verified feedbacks successfully"))
         .catch((err) => {
@@ -41,49 +46,55 @@ export default function UserFeedbacks() {
     }
   }, [currentModel?.model_name, user, getResponseByStatus]);
 
-  // Return null if user or currentModel is not available
+  // Cập nhật URL khi currentPage thay đổi
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", currentPage.toString());
+    router.push(`?${params.toString()}`, { scroll: false });
+  }, [currentPage, router, searchParams]);
+
+  // Nếu không có user hoặc currentModel, trả về null
   if (!user || !currentModel) {
     console.log("Missing user or currentModel:", { user, currentModel });
     return null;
   }
 
-  // Filter verified feedbacks for the current model
+  // Lọc phản hồi đã phê duyệt cho mô hình hiện tại
   const approvedFeedbacks = verifiedFeedbacks.filter(
     (feedback) =>
       feedback.status === "verified" &&
       feedback.model_used === currentModel.model_name
   );
 
-  // Log for debugging
-  console.log("Current Model:", currentModel);
-  console.log("All Verified Feedbacks:", verifiedFeedbacks);
-  console.log("Approved Feedbacks for current model:", approvedFeedbacks);
-  console.log("Approved Feedbacks Count:", approvedFeedbacks.length);
-  console.log("Current Page:", currentPage);
+  // Tính toán phân trang
+  const totalPages = Math.max(1, Math.ceil(approvedFeedbacks.length / itemsPerPage));
 
-  // Calculate pagination
-  const totalPages = Math.ceil(approvedFeedbacks.length / itemsPerPage);
-  console.log("Total Pages:", totalPages);
-
-  // Ensure currentPage is valid when approvedFeedbacks or totalPages changes
+  // Đảm bảo currentPage hợp lệ
   useEffect(() => {
-    if (approvedFeedbacks.length === 0) {
-      setCurrentPage(1);
-      console.log("Reset currentPage to 1 due to no feedbacks");
-      return;
-    }
-    const validCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
+    const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
     if (validCurrentPage !== currentPage) {
+      console.log("Adjusted currentPage from", currentPage, "to", validCurrentPage);
       setCurrentPage(validCurrentPage);
-      console.log("Adjusted currentPage to:", validCurrentPage);
     }
-  }, [approvedFeedbacks.length, totalPages, currentPage]);
+  }, [currentPage, totalPages]);
 
+  // Lấy phản hồi cho trang hiện tại
   const currentFeedbacks = approvedFeedbacks.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-  console.log("Current Feedbacks on page:", currentFeedbacks);
+
+  // Ghi log để debug
+  useEffect(() => {
+    console.log({
+      currentModel: currentModel.model_name,
+      verifiedFeedbacksCount: verifiedFeedbacks.length,
+      approvedFeedbacksCount: approvedFeedbacks.length,
+      totalPages,
+      currentPage,
+      currentFeedbacksCount: currentFeedbacks.length,
+    });
+  }, [currentModel, verifiedFeedbacks, approvedFeedbacks, totalPages, currentPage, currentFeedbacks]);
 
   return (
     <div className="container mx-auto">

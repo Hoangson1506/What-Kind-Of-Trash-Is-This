@@ -8,7 +8,7 @@ interface ApprovedFeedbackCardProps {
 
 export default function ApprovedFeedbackCard({ feedback }: ApprovedFeedbackCardProps) {
   const isSatisfied = feedback.is_right !== undefined ? feedback.is_right : false;
-  const comment = feedback.comment || "Không có dự đoán";
+  const comment = feedback.comment || "Không có bình luận";
   const addedAt = feedback.added_at ? new Date(feedback.added_at) : new Date();
   const formattedDate = addedAt.toLocaleDateString("vi-VN", {
     day: "2-digit",
@@ -59,7 +59,7 @@ export default function ApprovedFeedbackCard({ feedback }: ApprovedFeedbackCardP
 
       <div className="mb-2">
         <p className="text-sm text-gray-600">
-          Dự đoán: <span className="font-medium">{comment}</span>
+          Bình luận: <span className="font-medium">{comment}</span>
         </p>
       </div>
 

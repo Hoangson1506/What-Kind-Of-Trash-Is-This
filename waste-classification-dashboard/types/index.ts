@@ -3,9 +3,12 @@ export type VerificationStatus = "unverified" | "verified" | "disproved";
 export interface UserContributedData {
   data_id: number;
   image_path: string;
-  labels: Record<string, any>;  // hoặc string[] nếu labels là array
-  added_at: string;  // ISO timestamp
-  status: VerificationStatus
+  labels: Array<{
+    trashType: string;
+    bbox: number[];
+  }> | null;
+  added_at: string; // ISO timestamp
+  status: VerificationStatus;
 }
 export interface UserResponseData {
   response_id: number;

@@ -164,12 +164,6 @@ const ModelManagementPage = () => {
                     }
                   });
 
-                  // Tính kích thước tổng
-                  const totalFileSize = relatedModels.reduce((sum, model) => {
-                    const fileName = `${model.model_name}.${model.model_format}`;
-                    return sum + (modelFileSizes[fileName] || 0);
-                  }, 0);
-
                   // Lấy danh sách định dạng
                   const formats = relatedModels.map((model) => model.model_format).join(", ");
 

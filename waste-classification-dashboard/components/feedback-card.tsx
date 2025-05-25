@@ -27,6 +27,21 @@ export default function FeedbackCard({ feedback, isProcessing, onApprove, onReje
     return `${API_BASE_URL}/${cleanPath}`;
   };
 
+  // Hàm định dạng ngày từ add_at
+  const formatDate = (addAt: string | null | undefined) => {
+    if (!addAt) return "Không xác định";
+    try {
+      const date = new Date(addAt);
+      if (isNaN(date.getTime())) return "Không xác định";
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch {
+      return "Không xác định";
+    }
+  };
+
   // Tạo image URL
   const imageUrl = getImageUrl(feedback.image_path);
 
@@ -67,6 +82,17 @@ export default function FeedbackCard({ feedback, isProcessing, onApprove, onReje
 
       <div className="mb-4">
         <p className="text-gray-700">{feedback.comment || "Không có bình luận"}</p>
+      </div>
+
+      {/* Hiển thị model_used và add_at */}
+      <div className="mb-4 text-sm text-gray-500">
+        <p>
+          <span className="font-medium">Mô hình:</span>{" "}
+          {feedback.model_used || "Không xác định"}
+        </p>
+        <p>
+          <span className="font-medium">Ngày thêm:</span> {formatDate(feedback.added_at)}
+        </p>
       </div>
 
       <div className="flex space-x-2">
