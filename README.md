@@ -95,6 +95,11 @@ npm run dev
 ### Guide to make inference on GPU
 In the docker compose file, in the backend service, the runtime field is commented out, if your device use Nvidia GPU, uncomment the runtime field and rebuild the image, after that the web will use GPU for inference.
 
+### Dockerhub link
+- Admin image: https://hub.docker.com/repository/docker/hoangsonbandon/trash-detection-admin/general
+- Frontend image: https://hub.docker.com/repository/docker/hoangsonbandon/trash-detection-frontend/general
+- Backend image: https://hub.docker.com/repository/docker/hoangsonbandon/trash-detection-backend/general
+
 ## Usage
 After installation, go to your prefer web browser (Microsoft Edge, Google Chrome, Firefox,...) and open [http://localhost:5173](http://localhost:5173). Feel free to mess around and try our web features. The UI already have guides to use the Web.
 
