@@ -5,7 +5,7 @@ import { useAppContext } from "@/context/app-context";
 import FeedbackCard from "@/components/feedback-card";
 import Pagination from "@/components/pagination";
 import PageTitle from "@/components/page-title";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function FeedbackModeration() {
   const {
@@ -15,14 +15,19 @@ export default function FeedbackModeration() {
     getResponseByStatus,
     approveFeedback,
     rejectFeedback,
-    deleteDisapprovedResponse,
     error: contextError,
   } = useAppContext();
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const searchParams = useSearchParams();
+
+  // Khởi tạo currentPage từ URL query hoặc mặc định trang 1
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    return isNaN(page) ? 1 : page;
+  });
   const [processingItems, setProcessingItems] = useState<Set<number>>(new Set());
   const [localError, setLocalError] = useState<string | null>(null);
+  const itemsPerPage = 10;
 
   // Chuyển hướng nếu chưa đăng nhập
   useEffect(() => {
@@ -31,28 +36,32 @@ export default function FeedbackModeration() {
     }
   }, [user, router]);
 
-  // Lấy phản hồi khi mô hình thay đổi
+  // Lấy phản hồi chưa phê duyệt khi mô hình hoặc user thay đổi
   useEffect(() => {
-    setCurrentPage(1);
     if (currentModel && user) {
-      getResponseByStatus("unverified").catch((err) =>
-        setLocalError("Không thể tải phản hồi đang chờ: " + (err as Error).message)
-      );
+      getResponseByStatus("unverified").catch((err) => {
+        const errorMessage = "Không thể tải phản hồi đang chờ: " + (err as Error).message;
+        setLocalError(errorMessage);
+        console.error(errorMessage);
+      });
     }
   }, [currentModel?.model_name, user, getResponseByStatus]);
 
-  // Hiển thị lỗi từ context
+  // Cập nhật lỗi từ context
   useEffect(() => {
     if (contextError) {
       setLocalError(contextError);
     }
   }, [contextError]);
 
-  if (!user || !currentModel) return null;
+  // Cập nhật URL khi currentPage thay đổi
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", currentPage.toString());
+    router.push(`?${params.toString()}`, { scroll: false });
+  }, [currentPage, router, searchParams]);
 
-  // Log để kiểm tra dữ liệu
-  console.log("Current Model:", currentModel);
-  console.log("All Feedbacks:", feedbacks);
+  if (!user || !currentModel) return null;
 
   // Lọc phản hồi đang chờ cho mô hình hiện tại
   const pendingFeedbacks = feedbacks.filter(
@@ -60,27 +69,36 @@ export default function FeedbackModeration() {
       feedback.status === "unverified" &&
       feedback.model_used === currentModel.model_name
   );
-  console.log("Pending Feedbacks for current model:", pendingFeedbacks);
-
-  // Tính toán số lượng phản hồi đang chờ cho mô hình hiện tại
-  const pendingFeedbacksCount = pendingFeedbacks.length;
-  console.log("Pending Feedbacks Count (filtered):", pendingFeedbacksCount);
 
   // Tính toán phân trang
-  const totalPages = Math.ceil(pendingFeedbacks.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(pendingFeedbacks.length / itemsPerPage));
 
-  // Đảm bảo trang hiện tại hợp lệ
-  const validCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
+  // Đảm bảo currentPage hợp lệ
   useEffect(() => {
+    const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
     if (validCurrentPage !== currentPage) {
+      console.log("Adjusted currentPage from", currentPage, "to", validCurrentPage);
       setCurrentPage(validCurrentPage);
     }
-  }, [validCurrentPage, currentPage]);
+  }, [currentPage, totalPages]);
 
+  // Lấy phản hồi cho trang hiện tại
   const currentFeedbacks = pendingFeedbacks.slice(
-    (validCurrentPage - 1) * itemsPerPage,
-    validCurrentPage * itemsPerPage
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
+
+  // Ghi log để debug
+  useEffect(() => {
+    console.log({
+      currentModel: currentModel.model_name,
+      feedbacksCount: feedbacks.length,
+      pendingFeedbacksCount: pendingFeedbacks.length,
+      totalPages,
+      currentPage,
+      currentFeedbacksCount: currentFeedbacks.length,
+    });
+  }, [currentModel, feedbacks, pendingFeedbacks, totalPages, currentPage, currentFeedbacks]);
 
   // Xử lý hành động phê duyệt/từ chối
   const handleFeedbackAction = async (response_id: number, action: "approve" | "reject") => {
@@ -91,7 +109,6 @@ export default function FeedbackModeration() {
         await approveFeedback(response_id);
       } else {
         await rejectFeedback(response_id);
-        await deleteDisapprovedResponse(response_id);
       }
 
       await getResponseByStatus("unverified");
@@ -102,11 +119,14 @@ export default function FeedbackModeration() {
         return newSet;
       });
 
-      if (currentFeedbacks.length === 1 && validCurrentPage > 1 && totalPages > 1) {
-        setCurrentPage(validCurrentPage - 1);
+      // Chuyển về trang trước nếu trang hiện tại rỗng và không phải trang 1
+      if (currentFeedbacks.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
       }
     } catch (err) {
-      setLocalError("Không thể xử lý phản hồi: " + (err as Error).message);
+      const errorMessage = "Không thể xử lý phản hồi: " + (err as Error).message;
+      setLocalError(errorMessage);
+      console.error(errorMessage);
       setProcessingItems((prev) => {
         const newSet = new Set(prev);
         newSet.delete(response_id);
@@ -121,7 +141,7 @@ export default function FeedbackModeration() {
         <PageTitle title="Duyệt phản hồi" />
         <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg flex items-center">
           <span className="font-medium mr-2">Phản hồi đang chờ:</span>
-          <span className="text-lg font-bold">{pendingFeedbacksCount}</span>
+          <span className="text-lg font-bold">{pendingFeedbacks.length}</span>
         </div>
       </div>
 
@@ -166,9 +186,12 @@ export default function FeedbackModeration() {
 
           {totalPages > 1 && (
             <Pagination
-              currentPage={validCurrentPage}
+              currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              onPageChange={(page: number) => {
+                console.log("Pagination onPageChange triggered with page:", page);
+                setCurrentPage(page);
+              }}
               itemCount={pendingFeedbacks.length}
               itemsPerPage={itemsPerPage}
             />

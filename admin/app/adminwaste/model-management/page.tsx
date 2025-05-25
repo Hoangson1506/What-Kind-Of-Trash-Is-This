@@ -121,7 +121,7 @@ const ModelManagementPage = () => {
               <tr className="bg-gray-100">
                 <th className="px-4 py-2 text-left">Tên mô hình</th>
                 <th className="px-4 py-2 text-left">Phiên bản</th>
-                <th className="px-4 py-2 text-left">Người dùng hài lòng</th>
+                <th className="px-4 py-2 text-left">Người dùng phản hồi</th>
                 <th className="px-4 py-2 text-left">Dự đoán hình ảnh</th>
                 <th className="px-4 py-2 text-left">Dự đoán webcam</th>
                 <th className="px-4 py-2 text-left">Độ chính xác (%)</th>
@@ -131,7 +131,7 @@ const ModelManagementPage = () => {
             <tbody>
               {modelNames.length === 0 && !isLoading ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-2 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-2 text-center text-gray-500">
                     Không có mô hình nào
                   </td>
                 </tr>
@@ -141,34 +141,21 @@ const ModelManagementPage = () => {
                   const relatedModels = models.filter((model) => model.model_name === modelName);
                   if (relatedModels.length === 0) return null;
 
-                  // Tổng hợp thống kê
-                  let totalImageInferenceCount = 0;
-                  let totalLiveInferenceCount = 0;
-                  let totalNumberOfResponses = 0;
-                  let totalAccuracy = 0;
-                  let accuracyCount = 0;
+                  // Chọn mô hình đầu tiên để lấy thống kê
+                  const representativeModel = relatedModels[0];
+                  const stats = modelStatistics[representativeModel.model_name] || {
+                    image_inference_count: 0,
+                    live_inference_count: 0,
+                    number_of_responses: 0,
+                    accuracy: null,
+                  };
 
-                  relatedModels.forEach((model) => {
-                    const stats = modelStatistics[model.model_name] || {
-                      image_inference_count: 0,
-                      live_inference_count: 0,
-                      number_of_responses: 0,
-                      accuracy: null,
-                    };
-                    totalImageInferenceCount += stats.image_inference_count;
-                    totalLiveInferenceCount += stats.live_inference_count;
-                    totalNumberOfResponses += stats.number_of_responses;
-                    if (stats.accuracy !== null) {
-                      totalAccuracy += stats.accuracy;
-                      accuracyCount += 1;
-                    }
-                  });
-
-                  // Tính kích thước tổng
-                  const totalFileSize = relatedModels.reduce((sum, model) => {
-                    const fileName = `${model.model_name}.${model.model_format}`;
-                    return sum + (modelFileSizes[fileName] || 0);
-                  }, 0);
+                  // Gán trực tiếp các giá trị từ stats
+                  const totalImageInferenceCount = stats.image_inference_count;
+                  const totalLiveInferenceCount = stats.live_inference_count;
+                  const totalNumberOfResponses = stats.number_of_responses;
+                  const accuracy =
+                    stats.accuracy !== null ? `${(stats.accuracy*100).toFixed(2)}%` : "N/A";
 
                   // Lấy danh sách định dạng
                   const formats = relatedModels.map((model) => model.model_format).join(", ");
@@ -179,9 +166,6 @@ const ModelManagementPage = () => {
                   // Trích xuất phiên bản từ model_name
                   const versionMatch = modelName.match(/version_(\d+)/);
                   const version = versionMatch ? versionMatch[1] : modelName === "best" ? "N/A" : "N/A";
-
-                  // Định dạng độ chính xác trung bình
-                  const accuracy = accuracyCount > 0 ? `${(totalAccuracy / accuracyCount).toFixed(2)}%` : "N/A";
 
                   return (
                     <tr

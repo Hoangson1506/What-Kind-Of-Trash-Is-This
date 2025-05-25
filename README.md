@@ -45,7 +45,7 @@ With environmental pollution reaching critical levels, our team of AI undergradu
 - **Frontend**: React.js
 - **Backend**: FastAPI
 - **Image Detection Model**: YOLO
-- **Database**: ...
+- **Database**: SQLite
 
 ## Prerequisites (optional for developers)
 - Node.js 18.0 or higher
@@ -53,36 +53,26 @@ With environmental pollution reaching critical levels, our team of AI undergradu
 - Python installed
 
 ## Installation
-### Without Docker Hub
+### For teacher to test
 A step-by-step instructions to set up project locally.
 
 1. Clone the repository and navigate to the project directory:
 ``` 
 git clone https://github.com/Hoangson1506/What-Kind-Of-Trash-Is-This.git
-cd What-Kind-Of-Trash-Is-This
+cd /your-folder-contain-the-repo/What-Kind-Of-Trash-Is-This
 ```
 2. Run the server:
 ```
 docker-compose up -d
 ```
 
-### With Docker Hub
-Guide to set up project by using Docker Hub.
-1. Pull image:
-```
-docker pull ...
-```
-2. Get our `docker-compose.yml` file.
-3. Run the server:
-```
-docker-compose up -d
-```
 
 ### For contributors
+This is the setup guide for people who want to change the code and contribute to our projects
 1. Clone the repository and navigate to the project directory:
 ``` 
 git clone https://github.com/Hoangson1506/What-Kind-Of-Trash-Is-This.git
-cd What-Kind-Of-Trash-Is-This
+cd /your-folder-contain-the-repo/What-Kind-Of-Trash-Is-This
 ```
 2. Install backend requirements:
 ```
@@ -102,6 +92,9 @@ cd ../frontend
 npm run dev
 ```
 
+### Guide to make inference on GPU
+In the docker compose file, in the backend service, the runtime field is commented out, if your device use Nvidia GPU, uncomment the runtime field and rebuild the image, after that the web will use GPU for inference.
+
 ## Usage
 After installation, go to your prefer web browser (Microsoft Edge, Google Chrome, Firefox,...) and open [http://localhost:5173](http://localhost:5173). Feel free to mess around and try our web features. The UI already have guides to use the Web.
 
@@ -109,5 +102,5 @@ After installation, go to your prefer web browser (Microsoft Edge, Google Chrome
 Our group comprises of 4 members:
 - Hoàng Sơn: Frontend + Backend Developer
 - Phạm Minh Tú: Backend + Database Developer
-- Nguyễn Công Trình: Model Developer
-- Nguyễn Công Vinh: Admin Page Developer
+- Nguyễn Công Trình: AI Enginner
+- Nguyễn Công Vinh: Frontend Developer
