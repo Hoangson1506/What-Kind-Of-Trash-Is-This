@@ -271,7 +271,7 @@ async def get_model_statistics(admin: Annotated[AdminAccounts, Depends(get_curre
             )
         image_inference_count = data.image_inference_count
         live_inference_count = data.live_inference_count
-        response_results = await db.execute(select(UserResponses.is_right).where(UserResponses.model_used == model_name, UserResponses.is_verified == True))
+        response_results = await db.execute(select(UserResponses.is_right).where(UserResponses.model_used == model_name))
         response_data = response_results.scalars().all()
         response_num = len(response_data)
         accuracy = None

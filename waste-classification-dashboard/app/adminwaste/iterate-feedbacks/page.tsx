@@ -15,7 +15,6 @@ export default function FeedbackModeration() {
     getResponseByStatus,
     approveFeedback,
     rejectFeedback,
-    deleteDisapprovedResponse,
     error: contextError,
   } = useAppContext();
   const router = useRouter();
@@ -110,7 +109,6 @@ export default function FeedbackModeration() {
         await approveFeedback(response_id);
       } else {
         await rejectFeedback(response_id);
-        await deleteDisapprovedResponse(response_id);
       }
 
       await getResponseByStatus("unverified");

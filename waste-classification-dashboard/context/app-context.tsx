@@ -27,7 +27,6 @@ interface AppContextType {
   getDataByStatus: (status: VerificationStatus) => Promise<void>;
   getResponseByStatus: (status: VerificationStatus) => Promise<void>;
   deleteDisapprovedImage: (data_id: number) => void;
-  deleteDisapprovedResponse: (response_id: number) => void;
   modelStatistics: Record<string, ModelStatistics>;
   getModelStatistics: (modelName?: string) => Promise<void>;
   modelNames: string[];
@@ -732,35 +731,7 @@ const rejectFeedback = useCallback(async (response_id: number) => {
     }
   }, []);
 
-  const deleteDisapprovedResponse = useCallback(async (response_id: number) => {
-    const token = localStorage.getItem(AUTH_TOKEN.AUTH_TOKEN);
-    if (!token) {
-      setError("Không tìm thấy token xác thực");
-      return;
-    }
 
-    try {
-      await axios.delete(`http://localhost:8000/admin/delete-disproved-response`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        data: { response_id },
-      });
-      setFeedbacks((prevFeedbacks) => {
-        const newFeedbacks = prevFeedbacks.filter((feedback) => feedback.response_id !== response_id);
-        localStorage.setItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(newFeedbacks));
-        return newFeedbacks;
-      });
-      setVerifiedFeedbacks((prevVerified) => {
-        const newVerified = prevVerified.filter((feedback) => feedback.response_id !== response_id);
-        localStorage.setItem(STORAGE_KEYS.VERIFIED_FEEDBACKS, JSON.stringify(newVerified));
-        return newVerified;
-      });
-    } catch (err) {
-      setError("Không thể xóa phản hồi đã từ chối: " + (err as Error).message);
-    }
-  }, []);
 
   // Tính danh sách model_name duy nhất
   const modelNames = [...new Set(models.map((model) => model.model_name))];
@@ -851,7 +822,6 @@ const rejectFeedback = useCallback(async (response_id: number) => {
         getDataByStatus,
         getResponseByStatus,
         deleteDisapprovedImage,
-        deleteDisapprovedResponse,
         modelStatistics,
         getModelStatistics,
         modelNames,

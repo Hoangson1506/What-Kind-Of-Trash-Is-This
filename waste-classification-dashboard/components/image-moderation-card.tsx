@@ -47,7 +47,7 @@ const ImageModerationCard = memo(
         .join(", ") || "Nhãn: Không có nhãn";
     };
 
-    // Ánh xạ màu sắc theo trashType (dựa trên hình ảnh bạn cung cấp)
+    // Ánh xạ màu sắc theo trashType
     const getColorForTrashType = (trashType: string) => {
       const colorMap: { [key: string]: string } = {
         Plastic: "blue",    // Xanh dương
@@ -59,7 +59,47 @@ const ImageModerationCard = memo(
       return colorMap[trashType] || "black"; // Mặc định là đen nếu không tìm thấy
     };
 
-    // Hàm vẽ bounding boxes với chuẩn hóa và dịch sang phải
+    // Hàm kiểm tra xem hai bounding box có chồng lấn không
+    const isOverlapping = (box1: number[], box2: number[]): boolean => {
+      const [x1, y1, w1, h1] = box1;
+      const [x2, y2, w2, h2] = box2;
+      return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+    };
+
+    // Hàm điều chỉnh bounding box để không tràn ra ngoài và tránh chồng lấn
+    const adjustBoundingBox = (
+      currentBox: number[],
+      otherBoxes: Array<{ trashType: string; bbox: number[] }>,
+      index: number,
+      canvasWidth: number,
+      canvasHeight: number
+    ): number[] => {
+      let [x, y, width, height] = currentBox;
+
+      // Bước 1: Đảm bảo bounding box không tràn ra ngoài canvas
+      x = Math.max(0, Math.min(x, canvasWidth - width));
+      y = Math.max(0, Math.min(y, canvasHeight - height));
+      width = Math.min(width, canvasWidth - x);
+      height = Math.min(height, canvasHeight - y);
+
+      // Bước 2: Điều chỉnh để tránh chồng lấn với các box khác
+      otherBoxes.slice(0, index).forEach((other) => {
+        const otherBox = other.bbox;
+        if (isOverlapping([x, y, width, height], otherBox)) {
+          // Dịch chuyển bounding box hiện tại sang phải hoặc xuống dưới
+          x += otherBox[2] / 2; // Dịch sang phải nửa chiều rộng của box khác
+          y += otherBox[3] / 2; // Dịch xuống dưới nửa chiều cao của box khác
+
+          // Đảm bảo bounding box vẫn nằm trong canvas sau khi dịch chuyển
+          x = Math.max(0, Math.min(x, canvasWidth - width));
+          y = Math.max(0, Math.min(y, canvasHeight - height));
+        }
+      });
+
+      return [x, y, width, height];
+    };
+
+    // Hàm vẽ bounding boxes
     const drawBoundingBoxes = () => {
       const canvas = canvasRef.current;
       const img = imgRef.current;
@@ -68,37 +108,76 @@ const ImageModerationCard = memo(
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      // Đặt kích thước canvas bằng kích thước hiển thị của ảnh
+      // Lấy kích thước hiển thị của ảnh
       const displayedWidth = img.clientWidth;
       const displayedHeight = img.clientHeight;
+
+      // Lấy kích thước gốc của ảnh
+      const originalWidth = img.naturalWidth || displayedWidth;
+      const originalHeight = img.naturalHeight || displayedHeight;
+
+      // Tính tỷ lệ chuyển đổi
+      let scaleX = displayedWidth / originalWidth;
+      let scaleY = displayedHeight / originalHeight;
+
+      // Xử lý object-cover: Tính toán vùng hiển thị thực tế
+      let offsetX = 0;
+      let offsetY = 0;
+      let scaledWidth = displayedWidth;
+      let scaledHeight = displayedHeight;
+
+      if (img.classList.contains("object-cover")) {
+        const aspectRatioOriginal = originalWidth / originalHeight;
+        const aspectRatioDisplay = displayedWidth / displayedHeight;
+
+        if (aspectRatioOriginal > aspectRatioDisplay) {
+          // Ảnh rộng hơn khung hiển thị -> cắt hai bên
+          scaledWidth = displayedHeight * aspectRatioOriginal;
+          offsetX = (displayedWidth - scaledWidth) / 2;
+          scaleX = scaledWidth / originalWidth;
+        } else {
+          // Ảnh cao hơn khung hiển thị -> cắt trên dưới
+          scaledHeight = displayedWidth / aspectRatioOriginal;
+          offsetY = (displayedHeight - scaledHeight) / 2;
+          scaleY = scaledHeight / originalHeight;
+        }
+      }
+
+      // Đặt kích thước canvas bằng kích thước hiển thị của ảnh
       canvas.width = displayedWidth;
       canvas.height = displayedHeight;
 
-      // Tính toán tỉ lệ chuẩn hóa dựa trên kích thước hiển thị
-      const scaleX = displayedWidth / img.naturalWidth;
-      const scaleY = displayedHeight / img.naturalHeight;
-      const baseScale = Math.min(scaleX, scaleY);
-      const scale = baseScale * 2; // Scale lớn hơn 20% so với ảnh gốc
-
-      // Tính offset ngang (dịch sang phải 1/8 chiều rộng)
-      const offsetX = displayedWidth / 16;
-      const offsetY = displayedHeight/ 8
+      // Xóa canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Danh sách bounding box đã điều chỉnh
+      const adjustedBoxes: Array<{ trashType: string; bbox: number[] }> = [];
+
       // Vẽ tối đa 10 bounding box
-      image.labels.slice(0, 10).forEach((label) => {
+      image.labels.slice(0, 10).forEach((label, index) => {
         const { trashType, bbox } = label;
+        if (!Array.isArray(bbox) || bbox.length < 4) return;
+
+        // Chuyển đổi bounding box từ kích thước gốc sang kích thước hiển thị
         let [x, y, width, height] = bbox;
+        x = x * scaleX + offsetX;
+        y = y * scaleY + offsetY;
+        width = width * scaleX;
+        height = height * scaleY;
 
-        // Chuẩn hóa và áp dụng scale lớn hơn, dịch sang phải
-        x = (x * scale) +offsetX;
-        y = (y * scale) - offsetY;
-        width = width * scale;
-        height = height * scale;
+        // Điều chỉnh bounding box để không tràn ra ngoài và tránh chồng lấn
+        const adjustedBox = adjustBoundingBox(
+          [x, y, width, height],
+          adjustedBoxes,
+          index,
+          displayedWidth,
+          displayedHeight
+        );
 
-        // Đảm bảo bounding box không vượt ra ngoài canvas
-        x = Math.min(Math.max(x, 0), displayedWidth - width);
-        y = Math.min(Math.max(y, 0), displayedHeight - height);
+        // Lưu bounding box đã điều chỉnh
+        adjustedBoxes.push({ trashType, bbox: adjustedBox });
+
+        const [adjX, adjY, adjWidth, adjHeight] = adjustedBox;
 
         // Lấy màu sắc theo trashType
         const color = getColorForTrashType(trashType);
@@ -106,7 +185,7 @@ const ImageModerationCard = memo(
         // Vẽ bounding box
         ctx.strokeStyle = color;
         ctx.lineWidth = 1;
-        ctx.strokeRect(x, y, width, height);
+        ctx.strokeRect(adjX, adjY, adjWidth, adjHeight);
 
         // Thêm tên class (trashType) phía trên bounding box
         if (trashType) {
@@ -114,9 +193,9 @@ const ImageModerationCard = memo(
           ctx.fillStyle = color;
           ctx.textBaseline = "bottom";
 
-          // Tính toán vị trí nhãn, dịch theo offsetX
-          const textX = x;
-          const textY = y - 5; // Đặt nhãn phía trên bounding box 5px
+          // Tính toán vị trí nhãn
+          const textX = adjX;
+          const textY = adjY - 5; // Đặt nhãn phía trên bounding box 5px
 
           // Đảm bảo nhãn không bị vẽ ra ngoài canvas
           const safeTextY = Math.max(14, textY);
@@ -188,6 +267,7 @@ const ImageModerationCard = memo(
           <p><span className="font-medium">ID:</span> {image.data_id}</p>
           <p><span className="font-medium">Trạng thái:</span> {image.status === "unverified" ? "Chưa xác minh" : image.status === "verified" ? "Đã xác minh" : "Bị từ chối"}</p>
           <p><span className="font-medium">Ngày thêm:</span> {formatDate(image.added_at)}</p>
+          <p><span className="font-medium">Nhãn:</span> {formatLabels(image.labels)}</p>
         </div>
 
         <div className="mt-4 flex space-x-3">
